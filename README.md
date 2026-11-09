@@ -10,8 +10,9 @@ Website code, tests, design assets and future hosting configuration belong exclu
 - Website-owned local copy of the complete clinical web assets and data, isolated under ignored .private/clinical-assets.
 - Repeatable local build into ignored dist, with SHA-256 checks on every clinical data file.
 - Design interaction and build-preservation tests.
-- No deployed clinical website or reserved website address yet.
-- End-to-end website authentication and browser approval remain under implementation. The local clinical output must not be publicly hosted until authenticated data delivery and browser grants are enforced.
+- Live owner-private website: https://open-repertory-clinical.pastelsiren16.chatgpt.site
+- Hosting publication succeeded for commit 96c5c9c1caece5927474c4b0faff3ce05862dcb3. Hosting sign-in is separate from Apper.
+- Hosting enforces owner-private access. Apper member browser approval remains under implementation; sharing is not enabled for other users. The source dist directory is not suitable for public unauthenticated static hosting.
 - Existing Apper accounts are intended to provide identity continuity with the APK. Website patient records, browser settings and data changes are separate; no automatic app/website record synchronization is implemented.
 - Owner-only controls must use authenticated server-side role enforcement. No owner menu for ordinary members. Neutral provider display labels retain required legal credits.
 

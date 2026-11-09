@@ -13,3 +13,6 @@ jobs:
         run: node --check designs/app.js
       - name: Check design interactions
         run: node tests/test_website_samples.js
+
+      - name: Check compressed clinical fetch behavior
+        run: node tests/test_data_fetch.js
