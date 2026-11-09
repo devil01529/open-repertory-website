@@ -16,6 +16,9 @@ async function call(url,body,cookie,customOrigin=origin){
 }
 try {
  assert.equal((await call('/workspace/')).status,401);
+ assert.equal((await call('/api/login',[])).status,400);
+ assert.equal((await fetch(base+'/api/login',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:'null'})).status,400);
+
  assert.equal((await call('/api/signup',{email:'member@example.invalid',password:'fixture-member-password'})).status,201);
  const login=await call('/api/login',{email:'member@example.invalid',password:'fixture-member-password',remember:true});
  assert.match(login.headers.get('set-cookie'),/Max-Age=2592000/);
@@ -40,6 +43,7 @@ try {
  const memberPolicy = await (await call('/workspace/js/case-policy.js',null,member)).text();
  const ownerPolicy = await (await call('/workspace/js/case-policy.js',null,owner)).text();
  assert.notEqual(memberPolicy.split('\n')[0],ownerPolicy.split('\n')[0]);
+ assert.equal((await call('/workspace/js%2f..%2fjs%2fpatients.js',null,member)).status,400);
  const controls = await (await call('/workspace/js/web-controls.js',null,member)).text();
  assert.match(controls,/window.ORStandalone = true/);
  assert.match(controls,/Legal information/);
@@ -58,5 +62,9 @@ try {
  await call('/api/logout',{},renewed.headers.get('set-cookie').split(';')[0]);
  await call('/api/logout',{},owner);
  assert.equal((await call('/api/accounts',null,owner)).status,403);
+ for(let i=0;i<20;i++)assert.equal((await call('/api/login',{email:'limited@example.invalid',password:'fixture-wrong-password'})).status,401);
+ const limited=await call('/api/login',{email:'limited@example.invalid',password:'fixture-wrong-password'});
+ assert.equal(limited.status,429);assert.equal(limited.headers.get('retry-after'),'300');
+ assert.equal((await call('/api/login',{email:'owner@example.invalid',password:'new-fixture-password-only'})).status,200);
  console.log('Standalone signup, pending gate, owner approval, CSRF, revocation and logout checks passed.');
 }finally{await new Promise(r=>server.close(r));await rm(dir,{recursive:true,force:true})}

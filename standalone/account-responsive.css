@@ -11,3 +11,8 @@ h1{font-size:clamp(25px,4vw,34px);margin:0 0 6px}h2{font-size:21px;margin:0}main
 @media(min-width:800px){#accounts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){body{padding:12px 10px 24px}main{padding:20px 16px;border-radius:20px}#workspace{flex-basis:100%}#accounts li{padding:14px}#accounts li button{flex:1 1 auto}#owner>h2{display:block}}
 @media(prefers-color-scheme:dark){main>p{color:#b5c5d6}#accounts li{background:#14233688;border-color:#425873}.privacy-summary{background:#20364b;color:#dae8f8}}
+
+.account-filters{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px}
+.account-filters label{min-width:0}.account-filters select{width:100%;min-height:48px;padding:10px;border:1px solid #8ca3bb;border-radius:12px;background:transparent;color:inherit;font:inherit}
+#accountCount{font-size:.9rem;opacity:.85}
+@media(max-width:600px){.account-filters{grid-template-columns:1fr;gap:0}}

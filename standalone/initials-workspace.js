@@ -44,24 +44,39 @@
   }
   // Expiry/revocation and account switching must stop an already-open workspace.
   const expectedAccount=window.ORWebsiteAccount;
-  let checking=false;
+  let checking=false, connectionDialog=null, priorFocus=null;
+  function showConnectionProblem() {
+    if(!connectionDialog){
+      connectionDialog=document.createElement('dialog');
+      connectionDialog.className='connection-dialog';
+      connectionDialog.setAttribute('aria-labelledby','connectionTitle');
+      connectionDialog.innerHTML='<h2 id="connectionTitle">Connection interrupted</h2><p>Your browser-local cases are still here. Reconnect to verify access and continue editing.</p><p id="connectionStatus" role="status"></p><button type="button">Try again</button>';
+      connectionDialog.addEventListener('cancel',event=>event.preventDefault());
+      connectionDialog.querySelector('button').onclick=checkSession;
+      document.body.append(connectionDialog);
+    }
+    if(!connectionDialog.open){priorFocus=document.activeElement;connectionDialog.showModal()}
+    connectionDialog.querySelector('button').disabled=false;
+    document.getElementById('connectionStatus').textContent='Check your connection, then try again.';
+  }
   async function checkSession() {
     if(checking)return;checking=true;
+    if(connectionDialog?.open){connectionDialog.querySelector('button').disabled=true;document.getElementById('connectionStatus').textContent='Checking connection…'}
     try {
-      const response=await fetch('/api/session',{cache:'no-store'}), user=await response.json();
-      if(!response.ok || user.status!=='approved' || (expectedAccount && user.id!==expectedAccount)) {
-        // Keep layout-observer targets mounted until navigation completes.
+      const response=await fetch('/api/session',{cache:'no-store',signal:AbortSignal.timeout(15000)});
+      if(response.status===401 || response.status===403){
         document.body.inert=true;document.body.style.visibility='hidden';location.replace('/account');return;
       }
-
-    } catch (_) {
-      // Do not silently continue editing when approval cannot be verified.
-      document.body.inert=true;
-      document.title='Connection required — Open Repertory';
-      return;
-    } finally {checking=false}
-    document.body.inert=false;
+      if(!response.ok)throw Error('Connection unavailable');
+      const user=await response.json();
+      if(user.status!=='approved' || (expectedAccount && user.id!==expectedAccount)) {
+        document.body.inert=true;document.body.style.visibility='hidden';location.replace('/account');return;
+      }
+      if(connectionDialog?.open){connectionDialog.close();if(priorFocus?.isConnected)priorFocus.focus()}
+    } catch (_) {showConnectionProblem()}
+    finally {checking=false}
   }
+  addEventListener('online',checkSession);
   checkSession();setInterval(checkSession,30000);
   addEventListener('focus',checkSession);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkSession()});

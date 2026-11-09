@@ -14,10 +14,21 @@ async function api(url, body) {
   if(!res.ok){const error=Error(data.error||'Request failed');error.status=res.status;throw error}
   return data;
 }
+let accountRows=[], accountsPending=null, accountSignature='';
 async function accounts() {
-  const users=await api('/api/accounts'), fragment=document.createDocumentFragment();
+  if(accountsPending)return accountsPending;
+  accountsPending=(async()=>{
+    const users=await api('/api/accounts'), signature=JSON.stringify(users);
+    if(signature!==accountSignature){accountRows=users;accountSignature=signature;renderAccounts()}
+  })();
+  try {await accountsPending} finally {accountsPending=null}
+}
+function renderAccounts() {
+  const query=$('accountSearch').value.trim().toLowerCase(), filter=$('accountFilter').value;
+  const users=accountRows.filter(user=>user.email.toLowerCase().includes(query)&&(filter==='all'||user.status===filter)), fragment=document.createDocumentFragment();
+  $('accountCount').textContent=users.length+' shown · '+accountRows.filter(user=>user.status==='pending').length+' pending · '+accountRows.length+' total';
   users.sort((a,b)=>(a.status==='pending'?-1:0)-(b.status==='pending'?-1:0)||a.email.localeCompare(b.email));
-  if(!users.length){const item=document.createElement('li');item.textContent='No account requests yet. New registrations appear here automatically.';fragment.append(item)}
+  if(!users.length){const item=document.createElement('li');item.textContent='No matching accounts. New registrations appear here automatically.';fragment.append(item)}
   for(const user of users) {
     const row=document.createElement('li'),label=document.createElement('p');
     label.textContent=user.email+' · '+user.status;row.append(label);
@@ -25,7 +36,7 @@ async function accounts() {
       const b=document.createElement('button');b.textContent={approved:'Approve',rejected:'Reject',revoked:'Remove access'}[status];b.disabled=user.status===status;
       b.onclick=async()=>{
         if(loading)return;loading=true;row.querySelectorAll('button').forEach(x=>x.disabled=true);progress('Updating account access…');
-        try{await api('/api/decision',{id:user.id,status});await accounts();progress('Access updated.',false)}catch(error){progress(error.message,false);await accounts().catch(()=>{})}finally{loading=false}
+        try{await api('/api/decision',{id:user.id,status});await accounts();progress('Access updated.',false)}catch(error){progress(error.message,false);await accounts().catch(()=>{})}finally{loading=false;renderAccounts()}
       };
       row.append(b);
     }
@@ -57,7 +68,7 @@ async function refresh(redirect=false) {
     if(current.role==='owner')await accounts();
     if(redirect && current.status==='approved')enterWorkspace();
   } catch(error) {
-    if(error.status===401){current=null;$('login').hidden=false;$('session').hidden=true;$('owner').hidden=true;progress('Sign in with your Open Repertory website account.',false)}
+    if(error.status===401){current=null;$('login').hidden=false;$('session').hidden=true;$('owner').hidden=true;accountRows=[];accountSignature='';$('accounts').replaceChildren();progress('Sign in with your Open Repertory website account.',false)}
     else progress(error.message,false);
   } finally {refreshing=false}
 }
@@ -82,6 +93,8 @@ $('passwordForm').onsubmit=async e=>{
   e.preventDefault();if(loading)return;loading=true;progress('Changing your password…');
   try{const result=await api('/api/password',{currentPassword:$('oldPassword').value,newPassword:$('newPassword').value});$('passwordForm').reset();progress(result.message,false)}catch(error){progress(error.message,false)}finally{loading=false}
 };
+$('accountSearch').oninput=renderAccounts;
+$('accountFilter').onchange=renderAccounts;
 refresh(location.pathname!=='/account');
 setInterval(()=>{if(!loading&&current&&current.status==='pending')refresh(true)},5000);
 setInterval(()=>{if(!loading&&current?.role==='owner'&&!document.hidden)accounts().catch(()=>{})},15000);

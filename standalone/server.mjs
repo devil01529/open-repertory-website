@@ -36,6 +36,12 @@ export async function createApp(config) {
   if (!db.prepare("SELECT id FROM users WHERE role='owner'").get()) throw Error('Configure owner credentials securely before startup');
   db.exec('CREATE TABLE IF NOT EXISTS access_audit(actor TEXT, member TEXT, status TEXT, at INTEGER)');
   const attempts = new Map();
+  function allowAttempt(key, limit, now=Date.now()) {
+    for (const [k,v] of attempts) if(v.until<=now)attempts.delete(k);
+    let rate=attempts.get(key);
+    if(!rate){if(attempts.size>=5000)return false;rate={count:0,until:now+300000};attempts.set(key,rate)}
+    return ++rate.count<=limit;
+  }
   const server = http.createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -63,14 +69,15 @@ export async function createApp(config) {
           if (Buffer.byteLength(raw)>16384) return send(413,{error:'Request too large'});
         }
         const body = JSON.parse(raw || '{}');
+        if(!body || typeof body!=='object' || Array.isArray(body))return send(400,{error:'Expected a JSON object'});
         if (url.pathname === '/api/signup' || url.pathname === '/api/login') {
-          const key = req.socket.remoteAddress;
           const now = Date.now();
-          for (const [k,v] of attempts) if (v.until<now) attempts.delete(k);
-          const rate = attempts.get(key) || {count:0,until:now+300000};
-          if (++rate.count>20) return send(429,{error:'Too many attempts. Try again later.'});
-          attempts.set(key,rate);
           const email = String(body.email||'').trim().toLowerCase();
+          // Account buckets remain effective behind a shared proxy. Never trust client-supplied forwarding headers.
+          if(!allowAttempt('account:'+hash(email),20,now) || !allowAttempt('peer:'+req.socket.remoteAddress,200,now)){
+            res.setHeader('Retry-After','300');
+            return send(429,{error:'Too many attempts. Please wait five minutes and retry.'});
+          }
           const pw = String(body.password||'');
           if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length>254 || pw.length<12 || pw.length>256) return send(400,{error:'Use a valid email and a password of 12–256 characters'});
           if (url.pathname === '/api/signup') {
@@ -97,6 +104,7 @@ export async function createApp(config) {
           return send(200,{ok:true});
         }
         if (url.pathname === '/api/password') {
+          if(!allowAttempt('password:'+user.id,10)){res.setHeader('Retry-After','300');return send(429,{error:'Too many attempts. Please wait five minutes and retry.'})}
           const pw = String(body.newPassword || '');
           if (pw.length < 12 || pw.length > 256 || String(body.currentPassword||'').length>256) return send(400,{error:'Use a new password of 12–256 characters'});
           if (!await validPassword(String(body.currentPassword||''),user.password)) return send(403,{error:'Current password is incorrect'});
@@ -138,6 +146,7 @@ export async function createApp(config) {
         if (!user) return send(401,{error:'Sign in required'});
         if (user.status!=='approved') return send(403,{error:'Owner approval required'});
         const relative = decodeURIComponent(url.pathname.slice('/workspace/'.length)) || 'index.html';
+        if(relative.includes('\\') || relative.split('/').some(part=>part==='.'||part==='..'||part==='') || relative.includes('\0'))return send(400,{error:'Invalid asset path'});
         const root = path.resolve(config.assets);
         const target = path.resolve(root,relative);
         if (!target.startsWith(root+path.sep)) return send(403,{error:'Invalid asset path'});
@@ -181,6 +190,8 @@ export async function createApp(config) {
       return send(e.code==='ENOENT'?404:400,{error:'Request could not be completed'});
     }
   });
+  server.requestTimeout=30000;
+  server.headersTimeout=15000;
   server.on('close',()=>db.close());
   return server;
 }
@@ -195,4 +206,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     bootstrapHash:process.env.ASSET_ARCHIVE_SHA256,
   });
   server.listen(Number(process.env.PORT||3000),'0.0.0.0');
+  let stopping=false;
+  for(const signal of ['SIGTERM','SIGINT'])process.on(signal,()=>{
+    if(stopping)return;stopping=true;
+    server.close(()=>process.exit(0));
+    setTimeout(()=>process.exit(1),10000).unref();
+  });
 }

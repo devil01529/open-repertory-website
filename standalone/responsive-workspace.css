@@ -50,3 +50,7 @@ body.clinical-workspace #toolbar #pageTitle{order:1}
 body.clinical-workspace #toolbar .website-session{order:2}
 body.clinical-workspace #toolbar #menuBtn{order:3}
 body.clinical-workspace .website-session button{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:12px}
+
+.connection-dialog{max-width:440px;width:calc(100% - 32px);padding:24px;border:1px solid #8daac3;border-radius:24px;background:#eff5fc;color:#193149;box-shadow:0 18px 70px #0005}
+.connection-dialog::backdrop{background:#101c2b99}.connection-dialog button{min-height:44px;padding:10px 20px;border-radius:12px;font:inherit}
+@media(prefers-color-scheme:dark){.connection-dialog{background:#1b2939;color:#e7eff8}}
