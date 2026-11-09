@@ -50,7 +50,8 @@
     try {
       const response=await fetch('/api/session',{cache:'no-store'}), user=await response.json();
       if(!response.ok || user.status!=='approved' || (expectedAccount && user.id!==expectedAccount)) {
-        document.body.replaceChildren();location.replace('/account');return;
+        // Keep layout-observer targets mounted until navigation completes.
+        document.body.inert=true;document.body.style.visibility='hidden';location.replace('/account');return;
       }
 
     } catch (_) {
