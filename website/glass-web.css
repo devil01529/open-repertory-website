@@ -1,0 +1,14 @@
+/* Approved Glass direction; clinical grade styles remain in the base assets. */
+body{background:radial-gradient(at 90% 0%,#d7ebef,transparent 60%),#edf2f8}
+body[data-theme="dark"]{background:#111c27}
+@media(min-width:1050px){
+ body{padding-left:220px}
+ #bottomNav{position:fixed;inset:0 auto 0 0;width:220px;height:100vh;max-width:none;border-radius:0;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;padding:100px 16px 24px;gap:10px;border-right:1px solid #b9cadd;background:#f3f7fbdc}
+ #bottomNav:before{content:"Open Repertory";position:absolute;top:30px;left:24px;font-size:18px;font-weight:750;color:#193149}
+ #bottomNav button{flex:0 0 auto;min-height:52px;display:flex;gap:12px;justify-content:flex-start;padding:12px 16px;border-radius:14px}
+ #bottomNav small{font-size:14px}
+ #bottomNav .nav-capsule{display:none}
+ #toolbar{border-radius:0}
+ .dashboard-card,.dashboard-hero{border-radius:24px}
+}
+@media(prefers-reduced-transparency:reduce){#bottomNav{backdrop-filter:none;background:#f3f7fb}}

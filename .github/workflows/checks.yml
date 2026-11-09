@@ -1,0 +1,15 @@
+name: Website source checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Verify website build safeguards
+        run: python3 tests/test_website_build.py
+      - name: Check design JavaScript syntax
+        run: node --check designs/app.js
+      - name: Check design interactions
+        run: node tests/test_website_samples.js

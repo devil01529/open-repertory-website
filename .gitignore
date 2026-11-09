@@ -1,0 +1,13 @@
+.private/
+dist/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+node_modules/
+*.apk
+*.aab
+*.p12
+*.jks
+*.keystore
