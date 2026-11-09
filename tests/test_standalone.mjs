@@ -44,8 +44,18 @@ try {
  assert.match(controls,/window.ORStandalone = true/);
  assert.match(controls,/Legal information/);
  assert.match(controls,/location.assign\('\/account'\)/);
+ assert.equal((await call('/api/remove-account',{id:list[0].id},owner)).status,409);
  await call('/api/decision',{id:list[0].id,status:'revoked'},owner);
  assert.equal((await call('/workspace/',null,member)).status,403);
+ assert.equal((await call('/api/remove-account',{id:list[0].id},member)).status,403);
+ assert.equal((await call('/api/remove-account',{id:list[0].id},owner)).status,200);
+ assert.equal((await call('/api/session',null,member)).status,401);
+ assert.equal((await call('/api/password',{currentPassword:'wrong-password',newPassword:'new-fixture-password-only'},owner)).status,403);
+ assert.equal((await call('/api/password',{currentPassword:'fixture-owner-password-only',newPassword:'new-fixture-password-only'},owner)).status,200);
+ assert.equal((await call('/api/login',{email:'owner@example.invalid',password:'fixture-owner-password-only'})).status,401);
+ const renewed=await call('/api/login',{email:'owner@example.invalid',password:'new-fixture-password-only'});
+ assert.equal(renewed.status,200);
+ await call('/api/logout',{},renewed.headers.get('set-cookie').split(';')[0]);
  await call('/api/logout',{},owner);
  assert.equal((await call('/api/accounts',null,owner)).status,403);
  console.log('Standalone signup, pending gate, owner approval, CSRF, revocation and logout checks passed.');

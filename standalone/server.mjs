@@ -104,6 +104,19 @@ export async function createApp(config) {
           db.prepare('DELETE FROM sessions WHERE user_id=? AND hash!=?').run(user.id,hash(token));
           return send(200,{message:'Password changed. Other sessions have been signed out.'});
         }
+        if (url.pathname === '/api/remove-account') {
+          if (user.role!=='owner' || user.status!=='approved') return send(403,{error:'Owner access required'});
+          const member=db.prepare("SELECT id FROM users WHERE id=? AND role='member' AND status IN ('rejected','revoked')").get(String(body.id));
+          if (!member) return send(409,{error:'Remove access or reject this member before deleting the account'});
+          db.exec('BEGIN IMMEDIATE');
+          try {
+            db.prepare('DELETE FROM sessions WHERE user_id=?').run(member.id);
+            db.prepare('DELETE FROM users WHERE id=?').run(member.id);
+            db.prepare('INSERT INTO access_audit VALUES (?,?,?,?)').run(user.id,member.id,'deleted',Date.now());
+            db.exec('COMMIT');
+          } catch(error) {db.exec('ROLLBACK');throw error}
+          return send(200,{message:'Account deleted'});
+        }
         if (url.pathname === '/api/decision') {
           if (user.role!=='owner' || user.status!=='approved') return send(403,{error:'Owner access required'});
           if (!['approved','rejected','revoked'].includes(body.status)) return send(400,{error:'Invalid decision'});
@@ -120,6 +133,8 @@ export async function createApp(config) {
         return send(200,db.prepare("SELECT id,email,status FROM users WHERE role='member' ORDER BY email").all());
       }
       if (url.pathname.startsWith('/workspace/')) {
+        const navigation=req.headers['sec-fetch-dest']==='document' || (req.headers.accept||'').includes('text/html');
+        if ((!user || user.status!=='approved') && navigation) {res.writeHead(303,{Location:user?'/account':'/login'});return res.end()}
         if (!user) return send(401,{error:'Sign in required'});
         if (user.status!=='approved') return send(403,{error:'Owner approval required'});
         const relative = decodeURIComponent(url.pathname.slice('/workspace/'.length)) || 'index.html';

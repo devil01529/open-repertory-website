@@ -29,6 +29,17 @@ async function accounts() {
       };
       row.append(b);
     }
+    if(['rejected','revoked'].includes(user.status)) {
+      const remove=document.createElement('button');remove.textContent='Delete account';
+      remove.onclick=()=>{
+        const dialog=$('removeDialog');$('removeEmail').textContent=user.email;dialog.showModal();
+        $('confirmRemove').onclick=async()=>{
+          if(loading)return;loading=true;dialog.close();progress('Deleting account…');
+          try{await api('/api/remove-account',{id:user.id});await accounts();progress('Account deleted.',false)}catch(error){progress(error.message,false)}finally{loading=false}
+        };
+      };
+      row.append(remove);
+    }
     fragment.append(row);
   }
   $('accounts').replaceChildren(fragment);
@@ -74,3 +85,5 @@ $('passwordForm').onsubmit=async e=>{
 refresh(location.pathname!=='/account');
 setInterval(()=>{if(!loading&&current&&current.status==='pending')refresh(true)},5000);
 setInterval(()=>{if(!loading&&current?.role==='owner'&&!document.hidden)accounts().catch(()=>{})},15000);
+
+$('cancelRemove').onclick=()=>$('removeDialog').close();
