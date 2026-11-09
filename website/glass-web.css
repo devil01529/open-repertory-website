@@ -12,3 +12,26 @@ body[data-theme="dark"]{background:#111c27}
  .dashboard-card,.dashboard-hero{border-radius:24px}
 }
 @media(prefers-reduced-transparency:reduce){#bottomNav{backdrop-filter:none;background:#f3f7fb}}
+
+/* Website performance: avoid repainting blurred chrome while clinical panes scroll. */
+body.liquid-glass #toolbar,
+body.liquid-glass #bottomNav,
+body.liquid-glass .menu-panel,
+body.liquid-glass .modal,
+body.liquid-glass .reading-dialog {
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  background:var(--glass-solid,var(--panel))!important;
+}
+body.liquid-glass #bottomNav .nav-selection { display:none!important; }
+body.liquid-glass #bottomNav button.active {
+  background:var(--glass-active,var(--accent-soft))!important;
+  border-color:var(--glass-line)!important;
+}
+body.liquid-glass .reading-dialog,
+body.liquid-glass .mm-section-dialog { animation:none!important; }
+[data-mm-credits] { display:none!important; }
+#modalRoot [data-legal-choice] { display:block; margin:10px 0; }
+.website-session { display:flex;gap:8px;align-items:center; }
+.website-session a { color:var(--text);font-size:13px;padding:8px 12px;border:1px solid var(--border);border-radius:12px;text-decoration:none; }
+@media(max-width:700px){.website-session{margin-left:auto}.website-session a{padding:8px;font-size:12px}}

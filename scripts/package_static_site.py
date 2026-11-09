@@ -15,6 +15,14 @@ index=output/'index.html'
 html=index.read_text().replace('<script src="js/compat.js">','<script src="js/data-fetch.js"></script>\n  <script src="js/compat.js">')
 html=html.replace('</body>','<script src="js/web-controls.js"></script>\n</body>')
 index.write_text(html)
+glass=output/'js/glass-ui.js'
+glass_text=glass.read_text()
+old='return !reduced.matches && body.dataset.motion !== "reduced" && !document.hidden;'
+if old not in glass_text:raise ValueError('Expected animation guard changed')
+glass.write_text(glass_text.replace(old,'return false; // Web: immediate transitions avoid stacking animations.'))
+html_path=output/'index.html'
+html_text=html_path.read_text().replace('<meta charset="UTF-8">','<meta charset="UTF-8">\\n<meta name="referrer" content="no-referrer">')
+html_path.write_text(html_text)
 worker=output/'js/search-worker.js'
 worker.write_text('importScripts("data-fetch.js");\n'+worker.read_text())
 with (output/'css/glass-web.css').open('a') as f:

@@ -16,3 +16,6 @@ jobs:
 
       - name: Check compressed clinical fetch behavior
         run: node tests/test_data_fetch.js
+
+      - name: Check website refinements
+        run: python3 tests/test_web_refinements.py
