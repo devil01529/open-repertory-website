@@ -16,7 +16,7 @@ Sign in at the website, open Account → Change password, and choose your own pa
 
 1. Give members the website URL. They select Create account and choose an email/password; they are signed in to a waiting page and their request is created automatically.
 2. Open Account & access as the owner. New requests appear in Account requests; it refreshes automatically and also has a Refresh requests button.
-3. Select Approve. The member's waiting page checks every five seconds and opens the clinical workspace automatically.
+3. Select Approve. The member's waiting page checks every five seconds and redirects automatically to the workspace entry notice. Select Continue to workspace; the initial clinical view is revealed only after its repertory and controls are ready.
 4. Select Remove access to revoke an account. Subsequent server requests are denied; an already-open workspace checks periodically and when it regains focus. Previously downloaded browser data cannot be remotely erased.
 5. Rejected or revoked accounts can be permanently deleted using Delete account and its confirmation. They must register again to return. Owner accounts cannot be deleted using this interface.
 
@@ -34,7 +34,7 @@ Up to five cases are retained per account in each browser. Creating a sixth case
 
 ## Loading and movement
 
-Sign-in, requests, approval decisions and account navigation show progress messages. Clinical loading shows a small status indicator; page transitions use a short fade and movement without delaying navigation. Reduced-motion settings disable animated effects. Slow network requests show a retry message rather than waiting indefinitely on account forms.
+Sign-in, requests, approval decisions and account navigation show progress messages. Initial loading uses a full-screen privacy notice and then a solid preparation screen; subsequent clinical loading shows a small status indicator; page transitions use a short fade and movement without delaying navigation. Reduced-motion settings disable animated effects. Slow network requests show a retry message rather than waiting indefinitely on account forms.
 
 ## Hosting and updates
 

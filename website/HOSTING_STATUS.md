@@ -18,3 +18,5 @@ Local unit/API/browser tests additionally cover the five-case limit, cancellatio
 Limits: browser cases are local, account-separated and not encrypted; no cross-device synchronization or remote erasure. No email verification or automated forgotten-password reset. Physical-device testing, comprehensive clinical regression, backup recovery drills and external security review remain future work. No paid plan upgrade or domain purchase was made; Railway plan/trial/usage limits still apply. Source is connected to main, but automatic push-triggered deploys were not independently verified—check commit and deployment SUCCESS after changes.
 
 The prior ChatGPT-hosted site and Apper request prototype are historical and do not grant access to this domain. They were not made public or altered as part of this cutover. APK signing, releases and data audits remain separate.
+
+Responsive update: deployment c64f4af9-6292-441c-81f2-d50eaff37d8f is SUCCESS for commit 42d9600b572650646190f014194b7b8ef625cc42. See docs/RESPONSIVE_RELEASE.md for current viewport, startup and live verification. The previous deployment identifier above records the initial launch.

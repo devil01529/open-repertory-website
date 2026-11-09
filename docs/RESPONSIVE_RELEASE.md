@@ -16,3 +16,9 @@
 ## APK parity
 
 Shared CSS and implementation instructions are staged under integration/website-parity in the separate Openrepertory-update repository. These are reviewable integration files, not a signed APK release. Full Android source, original signing configuration and native validation remain required. Apper's daily tool limit blocked backend inspection/edits. No updater metadata or production APK was altered.
+
+## Published verification
+
+Published at https://open-repertory-production.up.railway.app with Railway deployment c64f4af9-6292-441c-81f2-d50eaff37d8f (SUCCESS), application commit 42d9600b572650646190f014194b7b8ef625cc42. Live health returned service ready and clinicalReady true. GitHub checks passed. Live Chromium owner/member checks passed after the new notice: login, signup/request, approval, cookie flags, case form, clinical navigation, revocation, account deletion and no JavaScript errors. Only synthetic verification accounts were created and deleted; existing member approvals were not changed.
+
+Shared APK overlay/guide commit: e5d0a83 in Openrepertory-update. This is source preparation, not an APK version or release. Apper reported DAILY_LIMIT_REACHED again during continuation; no Apper write or owner-identity bridge was deployed.
