@@ -143,7 +143,7 @@ export async function createApp(config) {
         if (!target.startsWith(root+path.sep)) return send(403,{error:'Invalid asset path'});
         const privateScripts = ['js/patients.js', 'js/lifecycle.js', 'js/recovery.js', 'js/clinician-tools.js'];
         if (privateScripts.includes(relative)) return send(404,{error:'Unavailable in the initials-only website'});
-        const webAssets = {'js/web-motion.js':'web-motion.js','js/case-policy.js':'case-policy.js','js/initials-workspace.js':'initials-workspace.js','css/initials-workspace.css':'initials-workspace.css'};
+        const webAssets = {'js/boot.js':'boot.js','css/responsive-workspace.css':'responsive-workspace.css','js/web-motion.js':'web-motion.js','js/case-policy.js':'case-policy.js','js/initials-workspace.js':'initials-workspace.js','css/initials-workspace.css':'initials-workspace.css'};
         if (webAssets[relative]) {
           let content = await readFile(new URL(webAssets[relative],import.meta.url),'utf8');
           if (relative === 'js/case-policy.js') content = 'window.ORWebsiteAccount = '+JSON.stringify(user.id)+';\n'+content;
@@ -159,7 +159,7 @@ export async function createApp(config) {
         const types = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.svg':'image/svg+xml','.gz':'application/gzip','.json':'application/json','.txt':'text/plain'};
         await stat(target);
         let content = await readFile(target);
-        if (['index.html','js/platform.js','js/app.js','js/clinical-ui.js'].includes(relative)) content = adaptAsset(relative, content.toString('utf8'), user.id);
+        if (['index.html','js/platform.js','js/app.js','js/clinical-ui.js','js/start.js'].includes(relative)) content = adaptAsset(relative, content.toString('utf8'), user.id);
         res.writeHead(200,{'Content-Type':types[ext]||'application/octet-stream'});
         return res.end(content);
       }
@@ -167,6 +167,10 @@ export async function createApp(config) {
         res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
         res.writeHead(200,{'Content-Type':'text/html'});
         return res.end(await readFile(new URL('./account.html',import.meta.url)));
+      }
+      if (url.pathname === '/account-responsive.css') {
+        res.writeHead(200,{'Content-Type':'text/css'});
+        return res.end(await readFile(new URL('./account-responsive.css',import.meta.url)));
       }
       if (url.pathname === '/account.js') {
         res.writeHead(200,{'Content-Type':'text/javascript'});

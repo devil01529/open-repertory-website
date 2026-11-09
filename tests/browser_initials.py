@@ -23,7 +23,7 @@ app.listen(4457,'127.0.0.1',()=>console.log('ready'));
          errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
          page.goto('http://127.0.0.1:4457/login')
          page.locator('#email').fill('test@example.invalid');page.locator('#password').fill('local-test-password-only');page.locator('#signin').click()
-         page.wait_for_url('**/workspace/');page.wait_for_function('window.OR?.workspaceReady === true')
+         page.wait_for_url('**/workspace/');page.locator('#bootContinue').click();page.wait_for_function("() => window.OR?.workspaceReady === true && !document.documentElement.classList.contains('workspace-booting')")
          assert page.locator('#patientNew').count()==0
          page.locator('[name=initials]').fill('AB');page.locator('[name=totality]').fill('Synthetic symptom totality');page.locator('[name=remedy]').fill('Test remedy')
          page.get_by_role('button',name='Save form',exact=True).click()
@@ -37,10 +37,10 @@ app.listen(4457,'127.0.0.1',()=>console.log('ready'));
          assert page.evaluate('(id)=>!!OR.state.cases[id]',first)
          page.evaluate("window.newCasePromise=OR.newCase('KL'); void 0")
          page.get_by_role('button',name='Delete oldest & continue',exact=True).click()
-         page.wait_for_function("OR.activeCase().name==='KL'")
+         page.wait_for_function("() => OR.activeCase().name==='KL'")
          assert page.evaluate('Object.keys(OR.state.cases).length')==5
          assert not page.evaluate('(id)=>!!OR.state.cases[id]',first)
-         page.reload();page.wait_for_function('window.OR?.workspaceReady === true')
+         page.reload();page.locator('#bootContinue').click();page.wait_for_function("() => window.OR?.workspaceReady === true && !document.documentElement.classList.contains('workspace-booting')")
          assert page.evaluate('Object.keys(OR.state.cases).length')==5
          page.locator('#initialsRepertory').click()
          page.wait_for_timeout(1200)

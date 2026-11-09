@@ -1,0 +1,33 @@
+(function(){
+ 'use strict';
+ let resolveConsent;
+ const consent=new Promise(resolve=>resolveConsent=resolve);
+ window.ORBoot={
+  async start(run){
+   await consent;
+   const title=document.getElementById('bootTitle'),message=document.getElementById('bootMessage');
+   title.textContent='Preparing your workspace';message.textContent='Loading the repertory, remedies and clinical controls…';
+   document.getElementById('bootContinue').hidden=true;document.getElementById('bootSpinner').hidden=false;
+   try {
+    await run();
+    if(document.fonts)await document.fonts.ready;
+    await Promise.all([...document.querySelectorAll('.brand-mark')].map(img=>img.decode?img.decode().catch(()=>{}):Promise.resolve()));
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    document.documentElement.classList.remove('workspace-booting');
+    document.getElementById('workspaceBoot').remove();
+    window.dispatchEvent(new Event('or-workspace-revealed'));
+   } catch(error){window.ORBoot.fail(error)}
+  },
+  fail(error){
+   const message=document.getElementById('bootMessage');if(!message)return;
+   document.getElementById('bootTitle').textContent='Workspace could not load';
+   message.textContent='Your saved cases have not been deleted. Check your connection and select Retry.';
+   document.getElementById('bootSpinner').hidden=true;
+   const button=document.getElementById('bootContinue');button.hidden=false;button.textContent='Retry';button.onclick=()=>location.reload();
+  }
+ };
+ addEventListener('error',()=>{if(document.documentElement.classList.contains('workspace-booting'))window.ORBoot.fail()});
+ document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('bootContinue').onclick=()=>resolveConsent();
+ });
+})();
