@@ -7,6 +7,11 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify standalone authorization and sessions
+        run: node tests/test_standalone.mjs
       - name: Verify website build safeguards
         run: python3 tests/test_website_build.py
       - name: Check design JavaScript syntax

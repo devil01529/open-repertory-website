@@ -7,6 +7,7 @@
 
   function openAccount() {
     OR.dismissMenu();
+    if (window.ORStandalone === true) { location.assign('/account'); return; }
     OR.modal({
       title: 'Website account',
       html: '<p>This website uses hosting sign-in. Access is currently restricted to the owner account.</p>' +

@@ -1,9 +1,12 @@
 import http from 'node:http';
+import { promisify } from 'node:util';
 import { DatabaseSync } from 'node:sqlite';
-import { randomBytes, scryptSync, timingSafeEqual, createHash } from 'node:crypto';
+import { randomBytes, scrypt, timingSafeEqual, createHash } from 'node:crypto';
 import { readFile, stat, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+const deriveKey = promisify(scrypt);
 
 export async function createApp(config) {
   const base = new URL(config.origin);
@@ -12,19 +15,19 @@ export async function createApp(config) {
   const db = new DatabaseSync(config.database);
   db.exec("PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,email TEXT UNIQUE,password TEXT,role TEXT,status TEXT); CREATE TABLE IF NOT EXISTS sessions(hash TEXT PRIMARY KEY,user_id TEXT,expires INTEGER);");
   const hash = token => createHash('sha256').update(token).digest('hex');
-  const password = text => {
+  const password = async text => {
     const salt = randomBytes(16).toString('hex');
-    return salt + ':' + scryptSync(text, salt, 64).toString('hex');
+    return salt + ':' + (await deriveKey(text, salt, 64)).toString('hex');
   };
-  const validPassword = (text, stored) => {
+  const validPassword = async (text, stored) => {
     const [salt, value] = stored.split(':');
-    return timingSafeEqual(scryptSync(text, salt, 64), Buffer.from(value, 'hex'));
+    return timingSafeEqual(await deriveKey(text, salt, 64), Buffer.from(value, 'hex'));
   };
   if (config.ownerEmail && config.ownerPassword) {
     if (config.ownerPassword.length < 16) throw Error('Owner password must have at least 16 characters');
     const email = config.ownerEmail.trim().toLowerCase();
     const owner = db.prepare('SELECT * FROM users WHERE email=?').get(email);
-    if (!owner) db.prepare('INSERT INTO users VALUES (?,?,?,?,?)').run(randomBytes(16).toString('hex'), email, password(config.ownerPassword), 'owner', 'approved');
+    if (!owner) db.prepare('INSERT INTO users VALUES (?,?,?,?,?)').run(randomBytes(16).toString('hex'), email, await password(config.ownerPassword), 'owner', 'approved');
     else if (owner.role !== 'owner') throw Error('Configured owner email already belongs to a member');
   }
   if (!db.prepare("SELECT id FROM users WHERE role='owner'").get()) throw Error('Configure owner credentials securely before startup');
@@ -64,17 +67,19 @@ export async function createApp(config) {
           if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length>254 || pw.length<12 || pw.length>256) return send(400,{error:'Use a valid email and a password of 12–256 characters'});
           if (url.pathname === '/api/signup') {
             if (db.prepare('SELECT id FROM users WHERE email=?').get(email)) return send(400,{error:'Cannot create this account'});
-            db.prepare('INSERT INTO users VALUES (?,?,?,?,?)').run(randomBytes(16).toString('hex'),email,password(pw),'member','pending');
+            db.prepare('INSERT INTO users VALUES (?,?,?,?,?)').run(randomBytes(16).toString('hex'),email,await password(pw),'member','pending');
             return send(201,{message:'Account created. Sign in to view approval status.'});
           }
           const account = db.prepare('SELECT * FROM users WHERE email=?').get(email);
           const dummy = '00000000000000000000000000000000:'+ '00'.repeat(64);
-          if (!validPassword(pw,account?.password || dummy) || !account) return send(401,{error:'Invalid email or password'});
+          if (!await validPassword(pw,account?.password || dummy) || !account) return send(401,{error:'Invalid email or password'});
           if (token) db.prepare('DELETE FROM sessions WHERE hash=?').run(hash(token));
           db.prepare('DELETE FROM sessions WHERE expires<?').run(now);
           const fresh = randomBytes(32).toString('hex');
-          db.prepare('INSERT INTO sessions VALUES (?,?,?)').run(hash(fresh),account.id,now+8*3600000);
-          res.setHeader('Set-Cookie',cookie(fresh,8*3600));
+          // Explicit opt-in for a private device; server approval is still checked on every request.
+          const lifetime = body.remember === true ? 30*24*3600 : 8*3600;
+          db.prepare('INSERT INTO sessions VALUES (?,?,?)').run(hash(fresh),account.id,now+lifetime*1000);
+          res.setHeader('Set-Cookie',cookie(fresh,lifetime));
           return send(200,{status:account.status,role:account.role});
         }
         if (!user) return send(401,{error:'Sign in required'});
@@ -106,7 +111,8 @@ export async function createApp(config) {
         if (!target.startsWith(root+path.sep)) return send(403,{error:'Invalid asset path'});
         if (relative === 'js/web-controls.js') {
           res.writeHead(200,{'Content-Type':'text/javascript'});
-          return res.end("document.querySelector('#menuAccount').onclick=()=>location.assign('/account');");
+          const controls = await readFile(new URL('../website/web-controls.js', import.meta.url), 'utf8');
+          return res.end("window.ORStandalone = true;\n" + controls);
         }
         const ext = path.extname(target);
         const types = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.svg':'image/svg+xml','.gz':'application/gzip','.json':'application/json','.txt':'text/plain'};

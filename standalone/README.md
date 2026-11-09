@@ -14,7 +14,7 @@ Website credentials are independent; old Apper passwords and grants are not impo
 
 ## Behavior
 
-New accounts are members with pending status. Sign-in sets an HttpOnly, Secure, SameSite session cookie. Session tokens are stored only as hashes in SQLite and expire in eight hours. Passwords use salted scrypt hashes. Same-origin JSON checks apply to writes; basic auth throttling is present.
+New accounts are members with pending status. Sign-in sets an HttpOnly, Secure, SameSite session cookie. Session tokens are stored only as hashes in SQLite and expire in eight hours by default, or 30 days when the user explicitly chooses “Stay signed in” on a private device. Approval and revocation are checked on every protected request, regardless of cookie lifetime. Passwords use salted scrypt hashes. Same-origin JSON checks apply to writes; basic auth throttling is present.
 
 Pending users see approval status. The page polls every five seconds and redirects to /workspace/ after approval. All workspace files, including data and scripts, require server-side approved status. Owners alone can approve, reject or revoke member accounts at /account; revocation blocks subsequent file requests even for existing sessions. Data already downloaded into a browser cannot be retroactively erased.
 
@@ -25,3 +25,7 @@ Tests cover registration, pending-data denial, member denial for owner operation
 ## Hosting requirement
 
 Connect an independent hosting account supporting Node 24 and persistent disk, then configure the private assets and runtime secrets there. No deployment credentials are currently connected. A custom domain requires ownership/DNS control, or the host can supply a subdomain. GitHub source access alone cannot provision an independent server or domain.
+
+## Release gate
+
+See `docs/REQUIREMENTS_AND_ROLLOUT.md` for the agreed scope and unresolved production gates. Clinical patient records currently use browser-origin local storage; per-account isolation and an explicit migration are required before shared-device use. Do not claim browser records have Android Keystore encryption.

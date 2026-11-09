@@ -34,7 +34,7 @@ async function refresh(redirect=false) {
 async function auth(signup) {
   if(loading)return;loading=true;$('signin').disabled=true;$('signup').disabled=true;
   try {
-    const result=await api(signup?'/api/signup':'/api/login',{email:$('email').value,password:$('password').value});
+    const result=await api(signup?'/api/signup':'/api/login',{email:$('email').value,password:$('password').value,remember:$('remember').checked});
     $('password').value='';
     if(signup)$('message').textContent=result.message;else await refresh(true);
   } catch(e){$('message').textContent=e.message}

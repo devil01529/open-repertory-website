@@ -16,12 +16,15 @@ async function call(url,body,cookie,customOrigin=origin){
 try {
  assert.equal((await call('/workspace/')).status,401);
  assert.equal((await call('/api/signup',{email:'member@example.invalid',password:'fixture-member-password'})).status,201);
- const login=await call('/api/login',{email:'member@example.invalid',password:'fixture-member-password'});
+ const login=await call('/api/login',{email:'member@example.invalid',password:'fixture-member-password',remember:true});
+ assert.match(login.headers.get('set-cookie'),/Max-Age=2592000/);
+ assert.match(login.headers.get('set-cookie'),/HttpOnly/);
  const member=login.headers.get('set-cookie').split(';')[0];
  assert.equal((await call('/workspace/',null,member)).status,403);
  assert.equal((await call('/api/accounts',null,member)).status,403);
  assert.equal((await call('/api/decision',{id:'x',status:'approved'},member)).status,403);
  const ownerLogin=await call('/api/login',{email:'owner@example.invalid',password:'fixture-owner-password-only'});
+ assert.match(ownerLogin.headers.get('set-cookie'),/Max-Age=28800/);
  const owner=ownerLogin.headers.get('set-cookie').split(';')[0];
  const list=await (await call('/api/accounts',null,owner)).json();
  assert.equal(list.length,1);
@@ -29,6 +32,10 @@ try {
  assert.equal((await call('/api/decision',{id:list[0].id,status:'approved'},owner)).status,200);
  assert.equal((await call('/workspace/',null,member)).status,200);
  assert.equal(await (await call('/workspace/',null,member)).text(),'private clinical fixture');
+ const controls = await (await call('/workspace/js/web-controls.js',null,member)).text();
+ assert.match(controls,/window.ORStandalone = true/);
+ assert.match(controls,/Legal information/);
+ assert.match(controls,/location.assign\('\/account'\)/);
  await call('/api/decision',{id:list[0].id,status:'revoked'},owner);
  assert.equal((await call('/workspace/',null,member)).status,403);
  await call('/api/logout',{},owner);
