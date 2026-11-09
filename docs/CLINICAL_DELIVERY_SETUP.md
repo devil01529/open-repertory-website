@@ -1,3 +1,5 @@
+> Historical implementation notes. Superseded by the independent Railway website; see [current owner guide](WEBSITE_OWNER_GUIDE.md) and [hosting status](../website/HOSTING_STATUS.md).
+
 # Protected clinical delivery migration
 
 An authenticated Apper server function named clinical-asset is deployed (id 6286, VITE_CLINICAL_ASSET). It runs with caller permissions, never administrator privileges. Before retrieving an allowlisted file it verifies a readable Website request, internally consistent ownership, matching browser ID, exactly one approved grant and a valid grant revision. Android approvals are rejected. Private-host access uses a server-only credential. No public website-sharing change was made.

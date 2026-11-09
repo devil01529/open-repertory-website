@@ -48,6 +48,9 @@ app.listen(4457,'127.0.0.1',()=>console.log('ready'));
          page.evaluate("OR.showPage('mm')")
          page.wait_for_timeout(1000)
          assert page.evaluate("OR.state.page === 'mm'")
+         page.evaluate("async()=>fetch('/api/logout',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})")
+         page.evaluate("dispatchEvent(new Event('focus'))")
+         page.wait_for_url('**/account')
          assert not errors,errors
          print('Browser passed: login redirect, hidden patient flow, case form, five cases, cancel sixth, replace oldest, reload persistence, repertory and library; zero JS errors.')
          b.close()

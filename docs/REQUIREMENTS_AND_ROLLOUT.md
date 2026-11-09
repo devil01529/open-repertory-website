@@ -8,7 +8,7 @@ This overrides earlier requests to migrate patient profiles to the website. Prov
 
 Implementation now uses website-only asset adapters, a fresh per-account browser-storage namespace and a case policy checked on writes. Legacy local records are not silently imported or erased. Accounts/approval remain in the server SQLite database; clinical cases are browser-local. Initials and free text are still potentially identifying: do not call this anonymous or encrypted patient storage. Local browser access/developer tools can read local storage; account separation in the application is not protection against another person controlling the same browser profile. No server account-management endpoint exposes clinical cases.
 
-Local Chromium checks passed for login-to-workspace redirect, absent patient input, case form save, cancellation and confirmed oldest replacement, reload persistence, repertory and library navigation. Unit/API tests cover the case limit, invalid initials, patient-write denial, session gates, per-account bootstrap identifiers, owner permissions and revocation. Independent hosting remains unconnected and no live cutover has occurred.
+Local Chromium checks passed for login-to-workspace redirect, absent patient input, case form save, cancellation and confirmed oldest replacement, reload persistence, repertory and library navigation. Unit/API tests cover the case limit, invalid initials, patient-write denial, session gates, per-account bootstrap identifiers, owner permissions and revocation. Independent Railway hosting is now live; see website/HOSTING_STATUS.md and docs/WEBSITE_OWNER_GUIDE.md for verified status and operation.
 
 ## Architecture decision
 
@@ -67,6 +67,8 @@ Check repertory search, chapter navigation/artwork, remedy hide/show, grades, ad
 
 Only after the gates pass, give the independent URL and owner/member instructions, document account migration and recovery, then update legacy links to the new origin. Existing app authentication and updates require a separate compatibility change; do not break them as an incidental website edit. Resume audits only after the user changes the current pause.
 
-## Current blocker
+## Deployment update — 2026-11-09
 
-As of this review Railway is discoverable but not installed/connected. No independent hosting credentials are configured in this workspace. The standalone server has not been deployed; the existing chatgpt.site URL still has its original access mechanism. Remaining security and privacy gates also prevent presenting the local implementation as a finished clinical service.
+Railway is connected and the standalone application is deployed at https://open-repertory-production.up.railway.app. Live owner/member browser checks passed, including approval, auto-entry, cookie flags, revocation and deleting the synthetic verification account. Accounts and clinical assets survived redeployment. No requests to ChatGPT or Apper occurred in the tested flows. The old Sites address remains separate.
+
+Remaining limitations: no automated email verification or forgotten-password recovery; browser cases are not encrypted or synced; physical-device regression, full clinical-function review, disaster-recovery drills and independent security review are still future work. Railway's current account/usage limits apply. This update supersedes earlier hosting blockers in the phased plan but does not claim all future gates are complete.

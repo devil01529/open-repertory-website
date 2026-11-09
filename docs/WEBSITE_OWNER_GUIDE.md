@@ -38,7 +38,7 @@ Sign-in, requests, approval decisions and account navigation show progress messa
 
 ## Hosting and updates
 
-Railway deploys main from the website GitHub repository automatically. Accounts and private clinical assets are on a persistent 500 MB volume, separate from the application image. The clinical file transfer endpoint is disabled after successful installation, and bootstrap upload credentials have been cleared from the service configuration. Raw clinical assets and account credentials are not in public GitHub.
+The Railway service is connected to main in the website GitHub repository. Always verify the deployed commit and SUCCESS status after a push; if GitHub did not trigger a deployment, reconnect the service to main to build the latest source. Automatic push-triggered deployment was not independently verified during this setup. Accounts and private clinical assets are on a persistent 500 MB volume, separate from the application image. The clinical file transfer endpoint is disabled after successful installation, and bootstrap upload credentials have been cleared from the service configuration. Raw clinical assets and account credentials are not in public GitHub.
 
 Railway account limits and any trial/usage pricing still apply. No paid plan upgrade or custom-domain purchase was performed. This is a Railway-provided HTTPS domain, not a separately purchased domain.
 

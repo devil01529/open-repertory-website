@@ -1,3 +1,5 @@
+> Historical implementation notes. Superseded by the independent Railway website; see [current owner guide](WEBSITE_OWNER_GUIDE.md) and [hosting status](../website/HOSTING_STATUS.md).
+
 # Application login and browser requests
 
 The current clinical address is hosted by Sites and remains protected by its ChatGPT-hosting access policy. Apper grants are separate; changing them cannot grant Sites access. The previous Account links were not a login integration.
