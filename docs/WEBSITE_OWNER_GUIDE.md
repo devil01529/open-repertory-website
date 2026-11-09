@@ -43,3 +43,11 @@ The Railway service is connected to main in the website GitHub repository. Alway
 Railway account limits and any trial/usage pricing still apply. No paid plan upgrade or custom-domain purchase was performed. This is a Railway-provided HTTPS domain, not a separately purchased domain.
 
 Keep a consistent SQLite backup and test recovery before expanding usage. Browser-local cases need their own deliberate export; server backups do not contain them. External security review and automated email/password recovery remain future work; this deployment is not a security certification.
+
+## Updated owner controls and connection recovery
+
+Account & access now offers email search, an access-status filter, and pending/total counts. Approve, reject and remove-access actions still require the owner session. Routine list refreshes retain focused controls when the account data has not changed.
+
+If workspace access cannot be checked because the network or server is unavailable, a connection dialog pauses interaction. Use **Try again**, or reconnect and let the website retry. Cases already saved in this browser remain there. Access expiry, removal or switching accounts still sends you back to Account & access.
+
+Repeated sign-in or password-change attempts can be temporarily limited. Wait five minutes before retrying; a successful session continues to use the existing stay-signed-in setting.

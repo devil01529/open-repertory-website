@@ -35,3 +35,10 @@ Run API access-control and lifecycle tests, case-limit and bootstrap tests, real
 6. Security review: session inventory/revoke-other-devices, owner second-factor authentication and external penetration testing before broader rollout.
 
 These subsequent items are a roadmap, not claims of implemented functionality. Any external paid provider or expanded data collection needs an explicit product decision.
+
+## Release evidence
+
+Application commit: `65d021c4399a416133f865ee8369c8321b570d12`.
+Railway deployment: `1fd297cf-cbab-4abc-adac-ac46f3d70b41`, observed `SUCCESS` on 9 November 2026.
+
+All listed local suites passed, including six viewport sizes in light/dark mode, connection-failure recovery, owner filtering and focused-control preservation. GitHub Website source checks passed. Live health returned 200 with clinicalReady true; the updated account script was verified on the production domain. Live browser checks passed for login, signup, owner approval, automatic entry, 30-day secure-cookie session, case form, repertory/library/analysis navigation, unauthorized owner-API denial and revocation. The synthetic test account was removed. No JavaScript errors were observed in these runs. This is tested coverage, not a claim that all possible defects have been eliminated.
