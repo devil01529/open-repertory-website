@@ -29,3 +29,9 @@ Connect an independent hosting account supporting Node 24 and persistent disk, t
 ## Release gate
 
 See `docs/REQUIREMENTS_AND_ROLLOUT.md` for the agreed scope and unresolved production gates. Clinical patient records currently use browser-origin local storage; per-account isolation and an explicit migration are required before shared-device use. Do not claim browser records have Android Keystore encryption.
+
+## Initials-only website mode
+
+The website now adapts the private APK asset snapshot at delivery time. It disables patient, visit, legacy recovery/import and patient backup modules, removes patient entry/navigation, supplies an initials-only Today form and retains repertory/analysis/library functions. The account's case store uses a fresh local-browser namespace; old patient stores remain untouched and are not imported. Five cases are retained per account per browser, with explicit confirmation before the oldest is replaced by a new case or restored snapshot. There is no cross-device case synchronization or claim of encrypted local storage. Someone controlling the browser profile can inspect its local data.
+
+Run `node tests/test_case_policy.mjs` and `node tests/test_standalone.mjs`. Real-asset browser checks additionally need the private `dist` snapshot. Runtime starts only when `CLINICAL_ASSETS/index.html` exists. This prevents deploying a working login page with a missing clinical workspace.

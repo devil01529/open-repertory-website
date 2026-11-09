@@ -2,6 +2,14 @@
 
 Reviewed 2026-11-09 against the conversation and current website source. This is a consolidated specification, not a claim that every earlier request has been completed. New explicit user instructions take precedence. The active task is the independent website; data audits remain paused.
 
+## Latest user change: initials-only website
+
+This overrides earlier requests to migrate patient profiles to the website. Provide only initials (1–4 letters), symptom totality, remedy considered, rubric selection and analysis. No patient profiles, contact fields, patient linkage or legacy patient-record import. Keep up to five cases per signed-in account **in each browser**; a sixth creation or snapshot restoration requires confirmation to delete the oldest created case, including its snapshots and notes. Cancellation keeps all five. No cross-device case synchronization is implemented.
+
+Implementation now uses website-only asset adapters, a fresh per-account browser-storage namespace and a case policy checked on writes. Legacy local records are not silently imported or erased. Accounts/approval remain in the server SQLite database; clinical cases are browser-local. Initials and free text are still potentially identifying: do not call this anonymous or encrypted patient storage. Local browser access/developer tools can read local storage; account separation in the application is not protection against another person controlling the same browser profile. No server account-management endpoint exposes clinical cases.
+
+Local Chromium checks passed for login-to-workspace redirect, absent patient input, case form save, cancellation and confirmed oldest replacement, reload persistence, repertory and library navigation. Unit/API tests cover the case limit, invalid initials, patient-write denial, session gates, per-account bootstrap identifiers, owner permissions and revocation. Independent hosting remains unconnected and no live cutover has occurred.
+
 ## Architecture decision
 
 Use the existing standalone Node 24 application to serve account pages, approval APIs and the clinical workspace from one HTTPS origin. Railway is one possible host, not a dependency. Any host must support a persistent volume, secure environment variables, backups and HTTPS. A provider subdomain is acceptable. No paid resource is authorized by this document and perpetual free hosting is not promised.

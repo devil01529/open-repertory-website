@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import '../standalone/case-policy.js';
+const p=globalThis.ORCasePolicy;
+assert.equal(p.initials('a. b.'),'AB');
+for(const name of ['Full Name','123','', 'ABCDE']) assert.throws(()=>p.initials(name));
+const cases=Object.fromEntries([1,2,3,4,5].map(n=>['case'+n,{id:'case'+n,name:'AB',createdAt:n,analysis:[],snapshots:[]} ]));
+const app={state:{cases},confirm:async()=>false};
+assert.equal(await p.makeRoom(app),false);assert.equal(Object.keys(cases).length,5);
+app.confirm=async()=>true;assert.equal(await p.makeRoom(app),true);assert.ok(!cases.case1);
+cases.case6={id:'case6',name:'CD',createdAt:6,analysis:[]};
+p.validateWrites({openrepertory_cases:{cases}});
+cases.case7={id:'case7',name:'EF',createdAt:7,analysis:[]};
+assert.throws(()=>p.validateWrites({openrepertory_cases:{cases}}),/five/);
+assert.throws(()=>p.validateWrites({openrepertory_patients:{}}),/Patient profiles/);
+assert.throws(()=>p.validateWrites({openrepertory_cases:{cases:{a:{name:'AB',phone:'123'}}}}),/Patient details/);
+console.log('Five-case cancellation, oldest replacement, initials and patient-write denial passed.');

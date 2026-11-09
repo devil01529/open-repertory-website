@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { adaptAsset } from './clinical-assets.mjs';
 import { promisify } from 'node:util';
 import { DatabaseSync } from 'node:sqlite';
 import { randomBytes, scrypt, timingSafeEqual, createHash } from 'node:crypto';
@@ -11,6 +12,7 @@ const deriveKey = promisify(scrypt);
 export async function createApp(config) {
   const base = new URL(config.origin);
   if (base.protocol !== 'https:' && base.hostname !== '127.0.0.1') throw Error('HTTPS origin required');
+  await stat(path.join(config.assets, 'index.html')); // Fail before offering login if clinical assets were not deployed.
   await mkdir(path.dirname(config.database), { recursive: true });
   const db = new DatabaseSync(config.database);
   db.exec("PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,email TEXT UNIQUE,password TEXT,role TEXT,status TEXT); CREATE TABLE IF NOT EXISTS sessions(hash TEXT PRIMARY KEY,user_id TEXT,expires INTEGER);");
@@ -109,6 +111,15 @@ export async function createApp(config) {
         const root = path.resolve(config.assets);
         const target = path.resolve(root,relative);
         if (!target.startsWith(root+path.sep)) return send(403,{error:'Invalid asset path'});
+        const privateScripts = ['js/patients.js', 'js/lifecycle.js', 'js/recovery.js', 'js/clinician-tools.js'];
+        if (privateScripts.includes(relative)) return send(404,{error:'Unavailable in the initials-only website'});
+        const webAssets = {'js/case-policy.js':'case-policy.js','js/initials-workspace.js':'initials-workspace.js','css/initials-workspace.css':'initials-workspace.css'};
+        if (webAssets[relative]) {
+          let content = await readFile(new URL(webAssets[relative],import.meta.url),'utf8');
+          if (relative === 'js/case-policy.js') content = 'window.ORWebsiteAccount = '+JSON.stringify(user.id)+';\n'+content;
+          res.writeHead(200,{'Content-Type':relative.endsWith('.css')?'text/css':'text/javascript'});
+          return res.end(content);
+        }
         if (relative === 'js/web-controls.js') {
           res.writeHead(200,{'Content-Type':'text/javascript'});
           const controls = await readFile(new URL('../website/web-controls.js', import.meta.url), 'utf8');
@@ -117,8 +128,10 @@ export async function createApp(config) {
         const ext = path.extname(target);
         const types = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.svg':'image/svg+xml','.gz':'application/gzip','.json':'application/json','.txt':'text/plain'};
         await stat(target);
+        let content = await readFile(target);
+        if (['index.html','js/platform.js','js/app.js','js/clinical-ui.js'].includes(relative)) content = adaptAsset(relative, content.toString('utf8'), user.id);
         res.writeHead(200,{'Content-Type':types[ext]||'application/octet-stream'});
-        return res.end(await readFile(target));
+        return res.end(content);
       }
       if (['/','/login','/account'].includes(url.pathname)) {
         res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");

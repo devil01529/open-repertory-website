@@ -12,6 +12,11 @@ jobs:
           node-version: 24
       - name: Verify standalone authorization and sessions
         run: node tests/test_standalone.mjs
+      - name: Verify initials-only case policy
+        run: |
+          node tests/test_case_policy.mjs
+          node --check standalone/initials-workspace.js
+          node --check standalone/clinical-assets.mjs
       - name: Verify website build safeguards
         run: python3 tests/test_website_build.py
       - name: Check design JavaScript syntax

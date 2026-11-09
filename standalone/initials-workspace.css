@@ -1,0 +1,9 @@
+[data-page="patients"], [data-page="file"], [data-bottom-page="patients"], #casePatientBar,
+#page-patients, #page-file, #menuBackup, #backupNudge, .context-patient {display:none!important}
+.initials-form {display:grid;gap:14px;max-width:800px}
+.initials-form label {display:grid;gap:6px;font-weight:600}
+.initials-form textarea,.initials-form input {width:100%;box-sizing:border-box;font:inherit;padding:12px;border:1px solid var(--border,#879aaf);border-radius:12px;background:var(--panel,#fff);color:inherit}
+.initials-form textarea {min-height:110px;resize:vertical}
+.case-actions {display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}
+.case-card {padding:18px;margin:14px 0;border:1px solid #879aaf66;border-radius:20px}
+#casePrivacyStatus {font-size:.9rem}
