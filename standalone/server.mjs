@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { brandAsset, brandedAssets } from './branding.mjs';
 import { assetBootstrap } from './bootstrap.mjs';
 import { adaptAsset } from './clinical-assets.mjs';
 import { promisify } from 'node:util';
@@ -56,6 +57,11 @@ export async function createApp(config) {
       if (base.protocol === 'https:') res.setHeader('Strict-Transport-Security','max-age=31536000');
       if (req.method === 'GET' && url.pathname === '/healthz') return send(200,{service:'ready',clinicalReady:assets.ready()});
       if (req.method === 'POST' && url.pathname === '/_bootstrap/clinical') return await assets.upload(req,res);
+      if(req.method==='GET' && url.pathname==='/similora-mark-v1.png'){
+        const logo=await readFile(new URL('./similora-mark-v1.png',import.meta.url));
+        res.writeHead(200,{'Content-Type':'image/png','Cache-Control':'public, max-age=86400'});
+        return res.end(logo);
+      }
       if (!assets.ready()) return send(503,{error:'Website preparation is in progress. Please retry shortly.'});
       const cookieName = base.protocol === 'https:' ? '__Host-or_session' : 'or_dev_session';
       const token = (req.headers.cookie || '').split(';').map(s=>s.trim()).find(s=>s.startsWith(cookieName+'='))?.slice(cookieName.length+1);
@@ -169,6 +175,7 @@ export async function createApp(config) {
         await stat(target);
         let content = await readFile(target);
         if (['index.html','js/platform.js','js/app.js','js/clinical-ui.js','js/start.js'].includes(relative)) content = adaptAsset(relative, content.toString('utf8'), user.id);
+        if(brandedAssets.has(relative)) content=brandAsset(relative,content.toString('utf8'));
         res.writeHead(200,{'Content-Type':types[ext]||'application/octet-stream'});
         return res.end(content);
       }

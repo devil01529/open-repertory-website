@@ -14,6 +14,7 @@ jobs:
         run: node tests/test_standalone.mjs
       - name: Verify initials-only case policy
         run: |
+          node tests/test_branding.mjs
           node tests/test_case_policy.mjs
           node tests/test_bootstrap.mjs
           node --check standalone/web-motion.js

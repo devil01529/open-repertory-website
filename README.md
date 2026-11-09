@@ -1,4 +1,4 @@
-# Open Repertory Website
+# Similora website
 
 Independent website project for the approved Clinical Glass design.
 

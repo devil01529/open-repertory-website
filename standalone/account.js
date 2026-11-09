@@ -68,7 +68,7 @@ async function refresh(redirect=false) {
     if(current.role==='owner')await accounts();
     if(redirect && current.status==='approved')enterWorkspace();
   } catch(error) {
-    if(error.status===401){current=null;$('login').hidden=false;$('session').hidden=true;$('owner').hidden=true;accountRows=[];accountSignature='';$('accounts').replaceChildren();progress('Sign in with your Open Repertory website account.',false)}
+    if(error.status===401){current=null;$('login').hidden=false;$('session').hidden=true;$('owner').hidden=true;accountRows=[];accountSignature='';$('accounts').replaceChildren();progress('Sign in with your Similora website account.',false)}
     else progress(error.message,false);
   } finally {refreshing=false}
 }

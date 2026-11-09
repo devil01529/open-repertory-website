@@ -43,7 +43,7 @@
     OR.dismissMenu();
     OR.modal({
       title: 'Legal information',
-      html: '<p>Original notices and source-specific credits are retained here.</p>' +
+      html: '<p>Similora — clinical workspace and library presentation.</p><p>Original books and datasets retain their own authors, rights and source-specific credits below. Similora branding does not claim authorship of those works.</p>' +
         '<button type="button" data-legal-repertory>Current repertory credits</button>' +
         sources.map((source, i) => '<button type="button" data-legal-choice="' + i + '">' +
           OR.escapeHTML(source.closest('.oorep-mm-source').querySelector('b').textContent) +

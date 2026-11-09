@@ -38,7 +38,7 @@ body.clinical-workspace #casePrivacyStatus {line-height:1.5;color:var(--muted)}
 @media(min-width:1050px){
  body.clinical-workspace.liquid-glass {padding:0 0 0 224px}
  body.clinical-workspace #bottomNav {inset:0 auto 0 0;width:224px;height:100vh;height:100dvh;border-radius:0;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:8px;padding:88px 16px 20px;border-right:1px solid var(--border)}
- body.clinical-workspace #bottomNav::before {display:block;content:'Open Repertory';position:absolute;top:28px;left:22px;font-size:1rem;font-weight:750;color:var(--text)}
+ body.clinical-workspace #bottomNav::before {display:block;content:'Similora';position:absolute;top:28px;left:22px;font-size:1rem;font-weight:750;color:var(--text)}
  body.clinical-workspace #bottomNav button {flex:0 0 auto;flex-direction:row;justify-content:flex-start;gap:12px;padding:14px;min-height:54px}
  body.clinical-workspace #bottomNav small {font-size:.9rem}
  body.clinical-workspace .case-layout {grid-template-columns:220px minmax(0,1fr)}

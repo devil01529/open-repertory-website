@@ -17,6 +17,10 @@ with tempfile.TemporaryDirectory(prefix='or-responsive-') as tmp:
    assert page.evaluate('() => OR.workspaceReady') is False
    page.locator('#bootContinue').click();expect(page.locator('#workspaceBoot')).to_have_count(0,timeout=30000)
    assert page.evaluate('() => !!OR.state.repertory')
+   expect(page.locator('.brand-name')).to_have_text('Similora')
+   expect(page.locator('.brand-mark')).to_have_attribute('src','/similora-mark-v1.png')
+   assert page.evaluate("() => document.querySelector('.brand-mark').naturalWidth > 0")
+   assert page.evaluate("() => OR.sourceDisplayText('Open Repertory source')") == 'Similora source'
    for width,height in [(360,800),(412,915),(768,1024),(1024,768),(1366,768),(1920,1080)]:
     page.set_viewport_size({'width':width,'height':height})
     for theme in ['light','dark']:
