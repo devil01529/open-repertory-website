@@ -15,6 +15,8 @@ jobs:
       - name: Verify initials-only case policy
         run: |
           node tests/test_case_policy.mjs
+          node tests/test_bootstrap.mjs
+          node --check standalone/web-motion.js
           node --check standalone/initials-workspace.js
           node --check standalone/clinical-assets.mjs
       - name: Verify website build safeguards

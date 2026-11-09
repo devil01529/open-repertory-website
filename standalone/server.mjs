@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { assetBootstrap } from './bootstrap.mjs';
 import { adaptAsset } from './clinical-assets.mjs';
 import { promisify } from 'node:util';
 import { DatabaseSync } from 'node:sqlite';
@@ -12,7 +13,7 @@ const deriveKey = promisify(scrypt);
 export async function createApp(config) {
   const base = new URL(config.origin);
   if (base.protocol !== 'https:' && base.hostname !== '127.0.0.1') throw Error('HTTPS origin required');
-  await stat(path.join(config.assets, 'index.html')); // Fail before offering login if clinical assets were not deployed.
+  const assets = await assetBootstrap(config);
   await mkdir(path.dirname(config.database), { recursive: true });
   const db = new DatabaseSync(config.database);
   db.exec("PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,email TEXT UNIQUE,password TEXT,role TEXT,status TEXT); CREATE TABLE IF NOT EXISTS sessions(hash TEXT PRIMARY KEY,user_id TEXT,expires INTEGER);");
@@ -33,6 +34,7 @@ export async function createApp(config) {
     else if (owner.role !== 'owner') throw Error('Configured owner email already belongs to a member');
   }
   if (!db.prepare("SELECT id FROM users WHERE role='owner'").get()) throw Error('Configure owner credentials securely before startup');
+  db.exec('CREATE TABLE IF NOT EXISTS access_audit(actor TEXT, member TEXT, status TEXT, at INTEGER)');
   const attempts = new Map();
   const server = http.createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -45,6 +47,10 @@ export async function createApp(config) {
     };
     try {
       const url = new URL(req.url, base);
+      if (base.protocol === 'https:') res.setHeader('Strict-Transport-Security','max-age=31536000');
+      if (req.method === 'GET' && url.pathname === '/healthz') return send(200,{service:'ready',clinicalReady:assets.ready()});
+      if (req.method === 'POST' && url.pathname === '/_bootstrap/clinical') return await assets.upload(req,res);
+      if (!assets.ready()) return send(503,{error:'Website preparation is in progress. Please retry shortly.'});
       const cookieName = base.protocol === 'https:' ? '__Host-or_session' : 'or_dev_session';
       const token = (req.headers.cookie || '').split(';').map(s=>s.trim()).find(s=>s.startsWith(cookieName+'='))?.slice(cookieName.length+1);
       const user = token ? db.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.hash=? AND s.expires>?').get(hash(token),Date.now()) : null;
@@ -90,10 +96,19 @@ export async function createApp(config) {
           res.setHeader('Set-Cookie',cookie('',0));
           return send(200,{ok:true});
         }
+        if (url.pathname === '/api/password') {
+          const pw = String(body.newPassword || '');
+          if (pw.length < 12 || pw.length > 256 || String(body.currentPassword||'').length>256) return send(400,{error:'Use a new password of 12–256 characters'});
+          if (!await validPassword(String(body.currentPassword||''),user.password)) return send(403,{error:'Current password is incorrect'});
+          db.prepare('UPDATE users SET password=? WHERE id=?').run(await password(pw),user.id);
+          db.prepare('DELETE FROM sessions WHERE user_id=? AND hash!=?').run(user.id,hash(token));
+          return send(200,{message:'Password changed. Other sessions have been signed out.'});
+        }
         if (url.pathname === '/api/decision') {
           if (user.role!=='owner' || user.status!=='approved') return send(403,{error:'Owner access required'});
           if (!['approved','rejected','revoked'].includes(body.status)) return send(400,{error:'Invalid decision'});
           const result = db.prepare("UPDATE users SET status=? WHERE id=? AND role='member'").run(body.status,String(body.id));
+          if (result.changes) db.prepare('INSERT INTO access_audit VALUES (?,?,?,?)').run(user.id,String(body.id),body.status,Date.now());
           return send(result.changes?200:404,{ok:!!result.changes});
         }
         return send(404,{error:'Not found'});
@@ -113,7 +128,7 @@ export async function createApp(config) {
         if (!target.startsWith(root+path.sep)) return send(403,{error:'Invalid asset path'});
         const privateScripts = ['js/patients.js', 'js/lifecycle.js', 'js/recovery.js', 'js/clinician-tools.js'];
         if (privateScripts.includes(relative)) return send(404,{error:'Unavailable in the initials-only website'});
-        const webAssets = {'js/case-policy.js':'case-policy.js','js/initials-workspace.js':'initials-workspace.js','css/initials-workspace.css':'initials-workspace.css'};
+        const webAssets = {'js/web-motion.js':'web-motion.js','js/case-policy.js':'case-policy.js','js/initials-workspace.js':'initials-workspace.js','css/initials-workspace.css':'initials-workspace.css'};
         if (webAssets[relative]) {
           let content = await readFile(new URL(webAssets[relative],import.meta.url),'utf8');
           if (relative === 'js/case-policy.js') content = 'window.ORWebsiteAccount = '+JSON.stringify(user.id)+';\n'+content;
@@ -157,6 +172,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     assets:process.env.CLINICAL_ASSETS || 'dist',
     ownerEmail:process.env.OWNER_EMAIL,
     ownerPassword:process.env.OWNER_PASSWORD,
+    bootstrapToken:process.env.ASSET_BOOTSTRAP_TOKEN,
+    bootstrapHash:process.env.ASSET_ARCHIVE_SHA256,
   });
   server.listen(Number(process.env.PORT||3000),'0.0.0.0');
 }

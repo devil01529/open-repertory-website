@@ -1,0 +1,6 @@
+**
+!Dockerfile
+!standalone/
+!standalone/**
+!website/
+!website/web-controls.js

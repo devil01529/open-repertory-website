@@ -10,8 +10,9 @@ export function adaptAsset(relative, text, userId) {
       text = replaceOnce(text, `<script src="js/${file}.js"></script>`, '');
     }
     text = replaceOnce(text, '<script src="js/platform.js"></script>', '<script src="js/case-policy.js"></script>\n<script src="js/platform.js"></script>');
-    text = replaceOnce(text, '<script src="js/start.js"></script>', '<script src="js/initials-workspace.js"></script>\n<script src="js/start.js"></script>');
+    text = replaceOnce(text, '<script src="js/start.js"></script>', '<script src="js/initials-workspace.js"></script>\n<script src="js/web-motion.js"></script>\n<script src="js/start.js"></script>');
     text = text.replace(/<!-- PATIENTS PAGE -->[\s\S]*?<!-- PATIENT FILE PAGE -->/, '<div id="page-patients" class="page"></div>\n<!-- PATIENT FILE PAGE -->');
+    text = text.replace('\\n<meta name="referrer"', '\n<meta name="referrer"');
     return text.replace('</head>', '<link rel="stylesheet" href="css/initials-workspace.css"></head>');
   }
   if (relative === 'js/platform.js') {
