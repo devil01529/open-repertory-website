@@ -55,6 +55,10 @@ export async function createApp(config) {
     try {
       const url = new URL(req.url, base);
       if (base.protocol === 'https:') res.setHeader('Strict-Transport-Security','max-age=31536000');
+      if (req.method === 'GET' && url.pathname === '/google779fa91694e4480f.html') {
+        res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
+        return res.end(await readFile(new URL('./google779fa91694e4480f.html', import.meta.url)));
+      }
       if (req.method === 'GET' && url.pathname === '/healthz') return send(200,{service:'ready',clinicalReady:assets.ready()});
       if (req.method === 'POST' && url.pathname === '/_bootstrap/clinical') return await assets.upload(req,res);
       if(req.method==='GET' && url.pathname==='/similora-mark-v1.png'){
