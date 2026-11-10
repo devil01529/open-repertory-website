@@ -8,8 +8,10 @@ function progress(message, busy=true) {
 }
 async function api(url, body) {
   let res;
-  try {res=await fetch(url,{...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),cache:'no-store',signal:AbortSignal.timeout(20000)})}
-  catch(error){throw Error(error.name==='TimeoutError'?'Connection is taking too long. Please retry.':'Connection failed. Check your connection and retry.')}
+  const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),20000);
+  try {res=await fetch(url,{...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),cache:'no-store',signal:controller.signal})}
+  catch(error){throw Error(error.name==='TimeoutError'||error.name==='AbortError'?'Connection is taking too long. Please retry.':'Connection failed. Check your connection and retry.')}
+  finally{clearTimeout(timeout)}
   const data=await res.json();
   if(!res.ok){const error=Error(data.error||'Request failed');error.status=res.status;throw error}
   return data;
@@ -53,7 +55,7 @@ function renderAccounts() {
     }
     fragment.append(row);
   }
-  $('accounts').replaceChildren(fragment);
+  $('accounts').textContent='';$('accounts').appendChild(fragment);
 }
 function enterWorkspace() {progress('Access confirmed. Opening your clinical workspace…');location.replace('/workspace/')}
 async function refresh(redirect=false) {
@@ -68,7 +70,7 @@ async function refresh(redirect=false) {
     if(current.role==='owner')await accounts();
     if(redirect && current.status==='approved')enterWorkspace();
   } catch(error) {
-    if(error.status===401){current=null;$('login').hidden=false;$('session').hidden=true;$('owner').hidden=true;accountRows=[];accountSignature='';$('accounts').replaceChildren();progress('Sign in with your Similora website account.',false)}
+    if(error.status===401){current=null;$('login').hidden=false;$('session').hidden=true;$('owner').hidden=true;accountRows=[];accountSignature='';$('accounts').textContent='';progress('Sign in with your Similora website account.',false)}
     else progress(error.message,false);
   } finally {refreshing=false}
 }
@@ -97,6 +99,6 @@ $('accountSearch').oninput=renderAccounts;
 $('accountFilter').onchange=renderAccounts;
 refresh(location.pathname!=='/account');
 setInterval(()=>{if(!loading&&current&&current.status==='pending')refresh(true)},5000);
-setInterval(()=>{if(!loading&&current?.role==='owner'&&!document.hidden)accounts().catch(()=>{})},15000);
+setInterval(()=>{if(!loading&&current&&current.role==='owner'&&!document.hidden)accounts().catch(()=>{})},15000);
 
 $('cancelRemove').onclick=()=>$('removeDialog').close();
