@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {relayAccount,ACCOUNT_ORIGIN} from './account-relay.mjs';
 import { migrationExport } from './migration-export.mjs';
 import { brandAsset, brandedAssets } from './branding.mjs';
 import { assetBootstrap } from './bootstrap.mjs';
@@ -55,6 +56,8 @@ export async function createApp(config) {
     };
     try {
       const url = new URL(req.url, base);
+      if(config.accountRelay && url.pathname.startsWith('/api/'))return await relayAccount(req,res,base);
+      if(config.accountRelay && (url.pathname==='/' || url.pathname.startsWith('/workspace'))){res.writeHead(302,{Location:ACCOUNT_ORIGIN+'/workspace/'});return res.end();}
       if (url.pathname === '/__migration-export') return await migrationExport(req,res,db,config.migrationPublicKey);
       if (base.protocol === 'https:') res.setHeader('Strict-Transport-Security','max-age=31536000');
       if (req.method === 'GET' && url.pathname === '/google779fa91694e4480f.html') {
@@ -217,7 +220,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     ownerPassword:process.env.OWNER_PASSWORD,
     bootstrapToken:process.env.ASSET_BOOTSTRAP_TOKEN,
     bootstrapHash:process.env.ASSET_ARCHIVE_SHA256,
-    migrationPublicKey:process.env.MIGRATION_PUBLIC_KEY,
+    migrationPublicKey:process.env.MIGRATION_PUBLIC_KEY,accountRelay:process.env.CLOUDFLARE_ACCOUNT_RELAY==='true',
   });
   server.listen(Number(process.env.PORT||3000),'0.0.0.0');
   let stopping=false;

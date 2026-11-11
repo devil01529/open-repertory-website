@@ -28,6 +28,7 @@ jobs:
           node tests/test_case_policy.mjs
           node tests/test_standalone.mjs
           node tests/test_migration_export.mjs
+          node tests/test_account_relay.mjs
           python3 cloudflare/prepare_baseline.py
           node cloudflare/build_assets.mjs
       - name: Provision and deploy
