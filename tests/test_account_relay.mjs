@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';import {Readable} from 'node:stream';import {relayAccount,ACCOUNT_ORIGIN} from '../standalone/account-relay.mjs';
+import assert from 'node:assert/strict';import {Readable} from 'node:stream';import {relayAccount,relayIdentity,ACCOUNT_ORIGIN} from '../standalone/account-relay.mjs';
 const base=new URL('https://old.example');
 async function run(method,origin,text,remote){let status,body,headers={};const req=Readable.from([text]);Object.assign(req,{method,url:'/api/decision',headers:{origin,'content-type':'application/json',cookie:'__Host-or_session=fixture'}});const res={setHeader:(k,v)=>headers[k]=v,writeHead:(s,h)=>{status=s;Object.assign(headers,h)},end:b=>body=b};await relayAccount(req,res,base,remote);return {status,body,headers};}
 let called=false;const remote=async(url,options)=>{called=true;assert.equal(url,ACCOUNT_ORIGIN+'/api/decision');assert.equal(options.headers.Origin,ACCOUNT_ORIGIN);assert.equal(options.headers.Cookie,'__Host-or_session=fixture');assert.equal(options.redirect,'manual');return new Response('{"ok":true}',{headers:{'Set-Cookie':'__Host-or_session=new; Secure; HttpOnly; Path=/'}})};
@@ -8,3 +8,8 @@ const result=await run('POST',base.origin,'{}',remote);assert.equal(result.statu
 assert.equal((await run('POST',base.origin,'{}',async()=>new Response(null,{status:302,headers:{location:'https://evil.example'}}))).status,502);
 assert.equal((await run('POST',base.origin,'{}',async()=>{throw Error('offline')})).status,503);
 console.log('PASS compatibility relay: trusted target, CSRF, bounded body, secure cookies, redirect denial and failure handling');
+
+assert.equal(await relayIdentity(null),null);
+assert.equal(await relayIdentity("fixture",async()=>new Response(null,{status:403})),null);
+assert.equal(await relayIdentity("fixture",async()=>Response.json({id:"invalid",role:"owner"})),null);
+assert.equal((await relayIdentity("fixture",async()=>Response.json({id:"a".repeat(32),role:"member",status:"revoked"}))).status,"revoked");

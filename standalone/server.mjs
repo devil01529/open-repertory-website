@@ -1,5 +1,5 @@
 import http from 'node:http';
-import {relayAccount,ACCOUNT_ORIGIN} from './account-relay.mjs';
+import {relayAccount,relayIdentity,ACCOUNT_ORIGIN} from './account-relay.mjs';
 import { migrationExport } from './migration-export.mjs';
 import { brandAsset, brandedAssets } from './branding.mjs';
 import { assetBootstrap } from './bootstrap.mjs';
@@ -57,7 +57,7 @@ export async function createApp(config) {
     try {
       const url = new URL(req.url, base);
       if(config.accountRelay && url.pathname.startsWith('/api/'))return await relayAccount(req,res,base);
-      if(config.accountRelay && (url.pathname==='/' || url.pathname.startsWith('/workspace'))){res.writeHead(302,{Location:ACCOUNT_ORIGIN+'/workspace/'});return res.end();}
+      if(config.accountRelay && url.pathname==='/'){res.writeHead(302,{Location:ACCOUNT_ORIGIN+'/workspace/'});return res.end();}
       if (url.pathname === '/__migration-export') return await migrationExport(req,res,db,config.migrationPublicKey);
       if (base.protocol === 'https:') res.setHeader('Strict-Transport-Security','max-age=31536000');
       if (req.method === 'GET' && url.pathname === '/google779fa91694e4480f.html') {
@@ -74,7 +74,7 @@ export async function createApp(config) {
       if (!assets.ready()) return send(503,{error:'Website preparation is in progress. Please retry shortly.'});
       const cookieName = base.protocol === 'https:' ? '__Host-or_session' : 'or_dev_session';
       const token = (req.headers.cookie || '').split(';').map(s=>s.trim()).find(s=>s.startsWith(cookieName+'='))?.slice(cookieName.length+1);
-      const user = token ? db.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.hash=? AND s.expires>?').get(hash(token),Date.now()) : null;
+      const user = config.accountRelay ? await relayIdentity(req.headers.cookie) : token ? db.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.hash=? AND s.expires>?').get(hash(token),Date.now()) : null;
       const cookie = (value,age) => cookieName+'='+value+'; HttpOnly; SameSite=Lax; Path=/; Max-Age='+age+(base.protocol==='https:'?'; Secure':'');
       if (req.method === 'POST') {
         if (req.headers.origin !== base.origin || req.headers['content-type']?.split(';')[0] !== 'application/json') return send(403,{error:'Invalid request origin or content type'});

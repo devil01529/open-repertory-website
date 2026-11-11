@@ -17,3 +17,10 @@ export async function relayAccount(req,res,base,remoteFetch=fetch){
   res.writeHead(upstream.status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(result);
  }catch{return send(503,'Account service temporarily unavailable');}
 }
+export async function relayIdentity(cookie,remoteFetch=fetch){
+ if(!cookie)return null;
+ const response=await remoteFetch(ACCOUNT_ORIGIN+'/api/session',{headers:{Cookie:cookie,'User-Agent':'Similora-Migration-Compatibility/1.0'},redirect:'manual',signal:AbortSignal.timeout(15000)});
+ if(response.status!==200)return null;
+ const identity=await response.json();
+ return /^[a-f0-9]{32}$/.test(identity.id)&&['owner','member'].includes(identity.role)?identity:null;
+}
