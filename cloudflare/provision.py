@@ -34,4 +34,5 @@ Path('cloudflare/wrangler.generated.json').write_text(json.dumps(config,indent=2
 url='https://similora.'+subdomain['subdomain']+'.workers.dev'
 Path('cloudflare/.build/deployment.json').write_text(json.dumps({'url':url,'accountId':account,'databaseId':database['uuid']})+'\n')
 print('Free-tier deployment target:',url)
+print('Recovery resource IDs:',json.dumps({'accountId':account,'databaseId':database['uuid']}))
 print('No billing plan change or custom domain purchase requested.')

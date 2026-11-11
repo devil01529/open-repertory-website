@@ -46,7 +46,7 @@ jobs:
           for attempt in range(24):
               try:
                   try:
-                      with urllib.request.urlopen(info['url']+'/healthz',timeout=20) as res: data=json.load(res)
+                      with urllib.request.urlopen(urllib.request.Request(info['url']+'/healthz',headers={'User-Agent':'Similora-Deployment-Check/1.0'}),timeout=20) as res: data=json.load(res)
                   except urllib.error.HTTPError as error:
                       if error.code!=503: raise
                       data=json.load(error)
