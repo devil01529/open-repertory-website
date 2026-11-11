@@ -4,17 +4,16 @@ Independent website project for the approved Clinical Glass design.
 
 Website code, tests, design assets and future hosting configuration belong exclusively in this repository. APK releases, signing, Android source, repertory audits and their checkpoints remain outside this project. Audits are paused at the owner's request.
 
-## Current state
+## Current production
 
-- Approved Glass design and desktop adaptation.
-- Website-owned local copy of the complete clinical web assets and data, isolated under ignored .private/clinical-assets.
-- Repeatable local build into ignored dist, with SHA-256 checks on every clinical data file.
-- Design interaction and build-preservation tests.
-- Live owner-private website: https://open-repertory-clinical.pastelsiren16.chatgpt.site
-- Hosting publication succeeded for commit 96c5c9c1caece5927474c4b0faff3ce05862dcb3. Hosting sign-in is separate from Apper.
-- Hosting enforces owner-private access. Apper member browser approval remains under implementation; sharing is not enabled for other users. The source dist directory is not suitable for public unauthenticated static hosting.
-- Existing Apper accounts are intended to provide identity continuity with the APK. Website patient records, browser settings and data changes are separate; no automatic app/website record synchronization is implemented.
-- Owner-only controls must use authenticated server-side role enforcement. No owner menu for ordinary members. Neutral provider display labels retain required legal credits.
+- Website: **https://similora.similora-167bde6ed1.workers.dev**
+- Account and owner approvals: `/account` on the same domain. No ChatGPT or Apper account is required.
+- Cloudflare Workers + D1 on free-tier quotas. The approved glass UI, protected clinical assets and initials-only browser-local case policy are retained.
+- Existing independent website accounts were migrated with the same IDs, password hashes and approval states. Similora APK 2.0.1 uses the same approval service.
+- Owner APIs enforce role and approval server-side. Members cannot list or approve accounts. Clinical records are not stored in D1; account/security records are.
+- Website deployment is automatic on reviewed main-branch source changes using `.github/workflows/cloudflare-deploy.yml`. The required token is an Actions secret, never a repository file.
+- See [operations and recovery](SIMILORA_MAINTENANCE/CLOUDFLARE_OPERATIONS.md) for exact resource IDs, limits and migration details.
+- The prior Railway service is a temporary compatibility route for APK 2.0.0 and old-origin browser cases. It is not the account authority. New deployments are pinned to Cloudflare.
 
 The local clinical copy is a deliberate import snapshot. It is not a shared folder or a live link to Android development files. Editing the website copy does not modify the APK. Clinical datasets are not uploaded to this public repository.
 
