@@ -27,6 +27,7 @@ jobs:
           node tests/test_cloudflare_worker.mjs
           node tests/test_case_policy.mjs
           node tests/test_standalone.mjs
+          node tests/test_migration_export.mjs
           python3 cloudflare/prepare_baseline.py
           node cloudflare/build_assets.mjs
       - name: Provision and deploy
@@ -40,13 +41,20 @@ jobs:
       - name: Verify public endpoint responds
         run: |
           python3 - <<'PY'
-          import json,urllib.request,urllib.error
+          import json,urllib.request,urllib.error,time
           info=json.load(open('cloudflare/.build/deployment.json'))
-          try:
-              with urllib.request.urlopen(info['url']+'/healthz',timeout=30) as res: data=json.load(res)
-          except urllib.error.HTTPError as error:
-              if error.code!=503: raise
-              data=json.load(error)
-          assert data['service'] in ['ready','awaiting account migration']
-          print(info['url'],data['service'])
+          for attempt in range(24):
+              try:
+                  try:
+                      with urllib.request.urlopen(info['url']+'/healthz',timeout=20) as res: data=json.load(res)
+                  except urllib.error.HTTPError as error:
+                      if error.code!=503: raise
+                      data=json.load(error)
+                  assert data['service'] in ['ready','awaiting account migration']
+                  print(info['url'],data['service'])
+                  break
+              except (urllib.error.URLError,ValueError,AssertionError):
+                  if attempt==23: raise
+                  print('Waiting for the new HTTPS endpoint to become ready...')
+                  time.sleep(10)
           PY
