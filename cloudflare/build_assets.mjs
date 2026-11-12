@@ -46,7 +46,7 @@ let glass=await readFile(web+'/js/glass-ui.js','utf8');
 glass=glass.replace('return !reduced.matches && body.dataset.motion !== "reduced" && !document.hidden;','return false; // Reduce stacked web animations.');
 await writeFile(web+'/js/glass-ui.js',glass);
 await writeFile(web+'/css/glass-web.css',(await readFile(web+'/css/glass-web.css','utf8'))+'\n#menuUpdates,#menuOnlineAi{display:none!important}\n');
-for(const file of ['startup.js','startup.css','account.html','account.js','account-responsive.css','similora-mark-v1.png','google779fa91694e4480f.html']) await cp(root+'standalone/'+file,out+'/'+file);
+for(const file of ['similora-launcher.png','startup.js','startup.css','account.html','account.js','account-responsive.css','similora-mark-v1.png','google779fa91694e4480f.html']) await cp(root+'standalone/'+file,out+'/'+file);
 console.log('Prepared protected clinical assets and shared account interface');
 
 await cp(root+'standalone/similora-mark-v1.png',web+'/img/brandmark.png');

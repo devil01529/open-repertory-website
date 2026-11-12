@@ -59,7 +59,7 @@ function renderAccounts() {
 }
 async function enterWorkspace() {await window.SimiloraStartup?.done;try{sessionStorage.setItem("similora-intro-handoff",String(Date.now()))}catch(_){}progress('Access confirmed. Opening your clinical workspace…');location.replace('/workspace/')}
 async function refresh(redirect=false) {
-  if(refreshing)return;refreshing=true;
+  if(refreshing)return;refreshing=true;$('retrySession').hidden=true;
   try {
     current=await api('/api/session');
     $('login').hidden=true;$('session').hidden=false;
@@ -71,7 +71,7 @@ async function refresh(redirect=false) {
     if(redirect && current.status==='approved')enterWorkspace();
   } catch(error) {
     if(error.status===401){current=null;$('login').hidden=false;$('session').hidden=true;$('owner').hidden=true;accountRows=[];accountSignature='';$('accounts').textContent='';progress('Sign in with your Similora website account.',false)}
-    else progress(error.message,false);
+    else {progress(error.message,false);$('retrySession').hidden=false;}
   } finally {refreshing=false}
 }
 async function auth(signup) {
@@ -81,7 +81,7 @@ async function auth(signup) {
     const details={email:$('email').value,password:$('password').value,remember:$('remember').checked};
     if(signup)await api('/api/signup',details);
     await api('/api/login',details);
-    $('password').value='';await refresh(true);
+    $('password').value='';hidePassword();await refresh(true);
   } catch(error){progress(error.message,false)}
   finally{loading=false;$('signin').disabled=false;$('signup').disabled=false}
 }
@@ -102,3 +102,8 @@ setInterval(()=>{if(!loading&&current&&current.status==='pending')refresh(true)}
 setInterval(()=>{if(!loading&&current&&current.role==='owner'&&!document.hidden)accounts().catch(()=>{})},15000);
 
 $('cancelRemove').onclick=()=>$('removeDialog').close();
+
+function hidePassword(){ $('password').type='password';$('passwordToggle').textContent='Show';$('passwordToggle').setAttribute('aria-pressed','false'); }
+$('passwordToggle').onclick=()=>{const show=$('password').type==='password';$('password').type=show?'text':'password';$('passwordToggle').textContent=show?'Hide':'Show';$('passwordToggle').setAttribute('aria-pressed',String(show));};
+$('retrySession').onclick=async()=>{progress('Reconnecting securely…');$('retrySession').disabled=true;try{await refresh(false)}finally{$('retrySession').disabled=false}};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)hidePassword()});

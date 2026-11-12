@@ -10,6 +10,7 @@ export function brandAsset(relative, text) {
   if(relative==='js/app.js')text=text.replace('(?:OOREP', '(?:Open Repertory source|OOREP');
   if (relative === 'index.html') {
     text = text.replaceAll('img/brandmark.png', '/similora-mark-v1.png');
+    text = text.replace('rel="icon" href="/similora-mark-v1.png"','rel="icon" href="/similora-launcher.png?v=205"');
     text = text.replace('<title>Similora — Repertory, Cases &amp; Patients</title>', '<title>Similora — Clinical workspace</title>');
   }
   return text;

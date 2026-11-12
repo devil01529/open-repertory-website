@@ -35,3 +35,7 @@ button,a{border-radius:16px;border:1px solid #afc4cf;background:#ffffff9c;box-sh
 main:has(#login:not([hidden])){max-width:560px}
 #login .remember-option{display:flex;align-items:center;gap:12px;font-weight:400;letter-spacing:0;margin:20px 0}
 #remember{min-height:18px;height:18px!important;width:18px!important;flex:0 0 18px;margin:0!important;accent-color:#227781}
+.password-field{display:flex;gap:8px;align-items:stretch;margin-top:7px}.password-field input{margin-top:0!important;min-width:0;flex:1}.password-field button{flex:0 0 68px;padding:8px}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #329994;outline-offset:3px}
+#retrySession{margin:0 0 14px;border-color:#2c838b;color:inherit}
+@media(prefers-reduced-transparency:reduce){main{backdrop-filter:none;background:#f5fafc}@media(prefers-color-scheme:dark){main{background:#162c3b}}}

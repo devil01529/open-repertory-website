@@ -193,8 +193,8 @@ export async function createApp(config) {
         res.writeHead(200,{'Content-Type':'text/html'});
         return res.end(await readFile(new URL('./account.html',import.meta.url)));
       }
-      if(['/startup.js','/startup.css','/similora-startup.mp4','/similora-startup-poster.jpg'].includes(url.pathname)){
-        const types={'.js':'text/javascript','.css':'text/css','.mp4':'video/mp4','.jpg':'image/jpeg'};
+      if(['/similora-launcher.png','/startup.js','/startup.css','/similora-startup.mp4','/similora-startup-poster.jpg'].includes(url.pathname)){
+        const types={'.png':'image/png','.js':'text/javascript','.css':'text/css','.mp4':'video/mp4','.jpg':'image/jpeg'};
         res.writeHead(200,{'Content-Type':types[path.extname(url.pathname)]});return res.end(await readFile(new URL('.'+url.pathname,import.meta.url)));
       }
       if (url.pathname === '/account-responsive.css') {
