@@ -11,9 +11,9 @@
  }
  window.SimiloraStartup={control};
  const overlay=document.getElementById('accountStartup');if(!overlay)return;
- const controller=new URLSearchParams(location.search).get('nativeIntro')==='1'?{done:Promise.resolve(),stop(){}}:control(overlay.querySelector('video'));let finished=false;
+ const controller=new URLSearchParams(location.search).get('nativeIntro')==='1'?{done:Promise.resolve(),stop(){}}:control(overlay.querySelector('video'));let finished=false,requested=false;
  window.SimiloraStartup.done=controller.done;
- controller.done.then(()=>{overlay.classList.add('intro-ended');overlay.querySelector('.startup-status').textContent='Loading Similora…';});
- window.SimiloraStartup.finish=async function(){await controller.done;if(finished)return;finished=true;overlay.classList.add('leaving');setTimeout(()=>overlay.remove(),reduced.matches?0:180);};
+ controller.done.then(()=>{if(requested)return;overlay.classList.add('intro-ended');overlay.querySelector('.startup-status').textContent='Loading Similora…';});
+ window.SimiloraStartup.finish=async function(){requested=true;await controller.done;if(finished)return;finished=true;overlay.classList.add('leaving');setTimeout(()=>overlay.remove(),reduced.matches?0:180);};
  overlay.querySelector('button').hidden=true;
 })();
