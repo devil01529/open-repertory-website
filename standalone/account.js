@@ -43,12 +43,12 @@ function renderAccounts() {
       row.append(b);
     }
     if(['rejected','revoked'].includes(user.status)) {
-      const remove=document.createElement('button');remove.textContent='Delete account';
-      remove.onclick=()=>{
+      const remove=document.createElement('button');remove.textContent='Delete account';remove.disabled=loading;
+      remove.onclick=()=>{if(loading)return;
         const dialog=$('removeDialog');$('removeEmail').textContent=user.email;dialog.showModal();
         $('confirmRemove').onclick=async()=>{
-          if(loading)return;loading=true;dialog.close();progress('Deleting account…');
-          try{await api('/api/remove-account',{id:user.id});await accounts();progress('Account deleted.',false)}catch(error){progress(error.message,false)}finally{loading=false}
+          if(loading)return;loading=true;$('refresh').disabled=true;dialog.close();renderAccounts();progress('Deleting account…');
+          try{await api('/api/remove-account',{id:user.id});if(accountsPending)await accountsPending;await accounts();progress('Account deleted.',false)}catch(error){progress(error.message,false)}finally{loading=false;$('refresh').disabled=false;renderAccounts()}
         };
       };
       row.append(remove);
@@ -93,7 +93,7 @@ $('checkAccess').onclick=()=>{progress('Checking your approval…');refresh(true
 $('workspace').onclick=e=>{e.preventDefault();enterWorkspace()};
 $('passwordForm').onsubmit=async e=>{
   e.preventDefault();if(loading)return;loading=true;progress('Changing your password…');
-  try{const result=await api('/api/password',{currentPassword:$('oldPassword').value,newPassword:$('newPassword').value});$('passwordForm').reset();progress(result.message,false)}catch(error){progress(error.message,false)}finally{loading=false}
+  try{const result=await api('/api/password',{currentPassword:$('oldPassword').value,newPassword:$('newPassword').value});$('passwordForm').reset();progress(result.message,false)}catch(error){progress(error.message,false)}finally{loading=false;$('refresh').disabled=false;renderAccounts()}
 };
 $('accountSearch').oninput=renderAccounts;
 $('accountFilter').onchange=renderAccounts;
