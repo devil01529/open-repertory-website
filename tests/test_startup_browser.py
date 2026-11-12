@@ -21,5 +21,19 @@ with sync_playwright() as p:
   page.goto(url+'/account.html');page.locator('#accountStartup').wait_for(state='detached',timeout=1500);page.close()
  page=b.new_page(reduced_motion='reduce');page.route('**/api/session',lambda r:r.fulfill(status=401,json={'error':'Sign in required'}));page.goto(url+'/account.html');page.locator('#accountStartup').wait_for(state='detached',timeout=1500);page.close()
  page=b.new_page(reduced_motion='reduce');page.route('**/api/session',lambda r:r.abort());page.goto(url+'/account.html');page.locator('#accountStartup').wait_for(state='detached');page.locator('#retrySession').wait_for(state='visible');page.unroute('**/api/session');page.route('**/api/session',lambda r:r.fulfill(status=401,json={'error':'Sign in required'}));page.locator('#retrySession').click();page.locator('#login').wait_for(state='visible');assert page.locator('#retrySession').is_hidden();page.close()
+ # Owner refresh/deletion overlap: the action must wait for refresh, then unlock controls.
+ rows=[{'id':'a'*32,'email':'busy-test@example.invalid','status':'revoked'},{'id':'b'*32,'email':'other@example.invalid','status':'pending'}];pending=[];calls=[0]
+ page=b.new_page(reduced_motion='reduce');page.route('**/account',lambda r:r.fulfill(body=(root/'standalone/account.html').read_text(),content_type='text/html'));page.route('**/api/session',lambda r:r.fulfill(json={'id':'c'*32,'email':'owner@example.invalid','role':'owner','status':'approved'}))
+ def account_route(route):
+  calls[0]+=1
+  if calls[0]==2:pending.append(route)
+  else:route.fulfill(json=rows)
+ page.route('**/api/accounts',account_route)
+ def remove_route(route):
+  rows.pop(0);route.fulfill(json={'message':'Account deleted'})
+ page.route('**/api/remove-account',remove_route);page.goto(url+'/account');page.locator('#owner').wait_for(state='visible');page.locator('#accountStartup').wait_for(state='detached');page.locator('#refresh').click()
+ from playwright.sync_api import expect
+ expect(page.get_by_role('button',name='Delete account',exact=True)).to_be_disabled();assert pending;pending.pop().fulfill(json=rows)
+ page.get_by_role('button',name='Delete account',exact=True).click();page.locator('#confirmRemove').click();page.locator('#accounts li').filter(has_text='busy-test@example.invalid').wait_for(state='detached');expect(page.locator('#refresh')).to_be_enabled();expect(page.get_by_role('button',name='Approve',exact=True)).to_be_enabled();page.close()
  b.close()
 server.shutdown();print('PASS logo-only intro, transparent image, full duration, same-tab no replay, reduced motion, rounded glass login, mobile/desktop and light/dark')

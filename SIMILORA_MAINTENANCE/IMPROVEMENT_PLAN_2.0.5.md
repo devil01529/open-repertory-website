@@ -17,3 +17,5 @@ Keep translucent rounded panels, crisp focus rings, comfortable controls and lig
 Verify mobile/desktop login, password toggle, failed-session retry, startup duration and no replay, adaptive icon loading, Android encrypted storage/clinical startup, signed updates and release retention. Deploy website through Actions and publish the APK with the same package and certificate. Preserve clinical data/algorithms. Store public recovery information here; private signing keys remain outside GitHub.
 
 All implementation changes are in this release. Test outcomes are recorded in the corresponding TEST_REPORT.md.
+
+Owner-panel reliability was also improved: refresh and approval feedback are serialized, deletion controls are disabled during refresh, and list reloads wait for mutation completion. A browser regression test holds a refresh request open, verifies deletion is disabled, completes it, then deletes a synthetic account and verifies controls recover.
