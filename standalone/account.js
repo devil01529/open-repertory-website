@@ -35,10 +35,10 @@ function renderAccounts() {
     const row=document.createElement('li'),label=document.createElement('p');
     label.textContent=user.email+' · '+user.status;row.append(label);
     for(const status of ['approved','rejected','revoked']) {
-      const b=document.createElement('button');b.textContent={approved:'Approve',rejected:'Reject',revoked:'Remove access'}[status];b.disabled=user.status===status;
+      const b=document.createElement('button');b.textContent={approved:'Approve',rejected:'Reject',revoked:'Remove access'}[status];b.disabled=loading||user.status===status;
       b.onclick=async()=>{
-        if(loading)return;loading=true;row.querySelectorAll('button').forEach(x=>x.disabled=true);progress('Updating account access…');
-        try{await api('/api/decision',{id:user.id,status});await accounts();progress('Access updated.',false)}catch(error){progress(error.message,false);await accounts().catch(()=>{})}finally{loading=false;renderAccounts()}
+        if(loading)return;loading=true;renderAccounts();$('refresh').disabled=true;progress('Updating account access…');
+        try{await api('/api/decision',{id:user.id,status});if(accountsPending)await accountsPending;await accounts();progress('Access updated.',false)}catch(error){progress(error.message,false);await accounts().catch(()=>{})}finally{loading=false;$('refresh').disabled=false;renderAccounts()}
       };
       row.append(b);
     }
@@ -88,7 +88,7 @@ async function auth(signup) {
 $('login').onsubmit=e=>{e.preventDefault();auth(false)};
 $('signup').onclick=()=>{if($('login').reportValidity())auth(true)};
 $('logout').onclick=async()=>{progress('Signing out…');try{await api('/api/logout',{});location.replace('/login')}catch(error){progress(error.message,false)}};
-$('refresh').onclick=async()=>{progress('Checking account requests…');try{await accounts();progress('Account requests are up to date.',false)}catch(error){progress(error.message,false)}};
+$('refresh').onclick=async()=>{if(loading||refreshing)return;loading=true;$('refresh').disabled=true;renderAccounts();progress('Checking account requests…');try{await accounts();progress('Account requests are up to date.',false)}catch(error){progress(error.message,false)}finally{loading=false;$('refresh').disabled=false;renderAccounts()}};
 $('checkAccess').onclick=()=>{progress('Checking your approval…');refresh(true)};
 $('workspace').onclick=e=>{e.preventDefault();enterWorkspace()};
 $('passwordForm').onsubmit=async e=>{
