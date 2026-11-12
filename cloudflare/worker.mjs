@@ -184,7 +184,7 @@ export default {
         return await serveAsset(req,env,'/workspace/'+relative,user.id);
       }
       if (['/','/login','/account'].includes(url.pathname)) return await serveAsset(req,env,'/account.html');
-      if (['/account.js','/account-responsive.css','/similora-mark-v1.png','/google779fa91694e4480f.html'].includes(url.pathname)) return await serveAsset(req,env,url.pathname);
+      if (['/startup.js','/startup.css','/similora-startup.mp4','/similora-startup-poster.jpg','/account.js','/account-responsive.css','/similora-mark-v1.png','/google779fa91694e4480f.html'].includes(url.pathname)) return await serveAsset(req,env,url.pathname);
       return reply(404,{error:'Not found'});
     } catch (_) { return reply(400,{error:'Request could not be completed'}); }
   },

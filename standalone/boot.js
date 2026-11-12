@@ -1,10 +1,12 @@
 (function(){
  'use strict';
- let resolveConsent;
+ let resolveConsent,animation;
  const consent=new Promise(resolve=>resolveConsent=resolve);
  window.ORBoot={
   async start(run){
    await consent;
+   document.getElementById('workspaceBoot').classList.add('boot-playing');
+   animation=window.SimiloraStartup?.control(document.querySelector('#workspaceBoot video'));
    const title=document.getElementById('bootTitle'),message=document.getElementById('bootMessage');
    title.textContent='Preparing your workspace';message.textContent='Loading the repertory, remedies and clinical controls…';
    document.getElementById('bootContinue').hidden=true;document.getElementById('bootSpinner').hidden=false;
@@ -14,11 +16,12 @@
     await Promise.all([...document.querySelectorAll('.brand-mark')].map(img=>img.decode?img.decode().catch(()=>{}):Promise.resolve()));
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     document.documentElement.classList.remove('workspace-booting');
-    document.getElementById('workspaceBoot').remove();
+    animation?.stop();document.getElementById('workspaceBoot').remove();
     window.dispatchEvent(new Event('or-workspace-revealed'));
    } catch(error){window.ORBoot.fail(error)}
   },
   fail(error){
+   animation?.stop();document.getElementById('workspaceBoot')?.classList.remove('boot-playing');
    const message=document.getElementById('bootMessage');if(!message)return;
    document.getElementById('bootTitle').textContent='Workspace could not load';
    message.textContent='Your saved cases have not been deleted. Check your connection and select Retry.';

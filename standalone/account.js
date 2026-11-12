@@ -97,7 +97,7 @@ $('passwordForm').onsubmit=async e=>{
 };
 $('accountSearch').oninput=renderAccounts;
 $('accountFilter').onchange=renderAccounts;
-refresh(location.pathname!=='/account');
+refresh(location.pathname!=='/account').finally(()=>window.SimiloraStartup?.finish?.());
 setInterval(()=>{if(!loading&&current&&current.status==='pending')refresh(true)},5000);
 setInterval(()=>{if(!loading&&current&&current.role==='owner'&&!document.hidden)accounts().catch(()=>{})},15000);
 
