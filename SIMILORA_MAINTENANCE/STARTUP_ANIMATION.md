@@ -7,3 +7,7 @@ Files: standalone/similora-startup.mp4 and similora-startup-poster.jpg; startup.
 Account session requests and clinical startup are independent of media playback. Account loading offers Skip and a timeout fallback; clinical loading remains gated by privacy consent and actual readiness. Reduced-motion mode does not download/play the web video. Hidden tabs pause it. Failure/retry and auth approvals retain their existing authority; the animation cannot unlock a workspace. There is no mandatory ten-second wait.
 
 Browser regression tests: tests/test_startup_browser.py. Run after building cloudflare/.build/assets. Native playback and regression evidence are in the corresponding APK release report.
+
+## 2.0.3 correction
+
+Footage edges are feathered into the exact screen background to remove the pasted rectangle. The intro plays once to completion before content is revealed. If initialization is still running after the intro, the animation disappears and loading controls appear. Media completion and authenticated readiness are separate gates. Account-to-workspace navigation carries an ephemeral completion marker so it does not replay the intro twice. The native account screen uses a cosmetic query flag after the bundled intro; approval requirements are unchanged.

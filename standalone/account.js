@@ -57,7 +57,7 @@ function renderAccounts() {
   }
   $('accounts').textContent='';$('accounts').appendChild(fragment);
 }
-function enterWorkspace() {progress('Access confirmed. Opening your clinical workspace…');location.replace('/workspace/')}
+async function enterWorkspace() {await window.SimiloraStartup?.done;try{sessionStorage.setItem("similora-intro-handoff",String(Date.now()))}catch(_){}progress('Access confirmed. Opening your clinical workspace…');location.replace('/workspace/')}
 async function refresh(redirect=false) {
   if(refreshing)return;refreshing=true;
   try {

@@ -2,21 +2,18 @@
  'use strict';
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  function control(video){
-  if(!video)return {stop(){}};
-  let stopped=false;
-  const play=()=>{if(stopped||document.hidden||reduced.matches){video.pause();return}if(!video.getAttribute('src'))video.src=video.dataset.src;video.play().catch(()=>{});};
-  const stop=()=>{stopped=true;video.pause();video.removeAttribute('src');video.load();document.removeEventListener('visibilitychange',play);reduced.removeEventListener?.('change',play)};
-  video.addEventListener('error',()=>{video.pause();},{once:true});
-  document.addEventListener('visibilitychange',play);reduced.addEventListener?.('change',play);
-  // Do not even download video when motion reduction is enabled.
-  if(!reduced.matches){video.src=video.dataset.src;play();}
-  return {stop};
+  if(!video)return {done:Promise.resolve(),stop(){}};
+  let stopped=false,resolve;const done=new Promise(r=>resolve=r);
+  function complete(){if(stopped)return;stopped=true;video.pause();document.removeEventListener('visibilitychange',play);resolve();}
+  function play(){if(stopped)return;if(document.hidden){video.pause();return}if(reduced.matches){complete();return}if(!video.getAttribute('src'))video.src=video.dataset.src;video.play().catch(()=>{if(!document.hidden)complete()});}
+  video.loop=false;video.addEventListener('ended',complete,{once:true});video.addEventListener('error',complete,{once:true});document.addEventListener('visibilitychange',play);play();
+  return {done,stop:complete};
  }
  window.SimiloraStartup={control};
  const overlay=document.getElementById('accountStartup');if(!overlay)return;
- const controller=control(overlay.querySelector('video'));let finished=false;
- function finish(){if(finished)return;finished=true;controller.stop();overlay.classList.add('leaving');setTimeout(()=>overlay.remove(),reduced.matches?0:180);}
- window.SimiloraStartup.finish=finish;
- overlay.querySelector('button').onclick=finish;
- setTimeout(finish,23000); // An unavailable session endpoint must never trap the login screen.
+ const controller=new URLSearchParams(location.search).get('nativeIntro')==='1'?{done:Promise.resolve(),stop(){}}:control(overlay.querySelector('video'));let finished=false;
+ window.SimiloraStartup.done=controller.done;
+ controller.done.then(()=>{overlay.classList.add('intro-ended');overlay.querySelector('.startup-status').textContent='Loading Similora…';});
+ window.SimiloraStartup.finish=async function(){await controller.done;if(finished)return;finished=true;overlay.classList.add('leaving');setTimeout(()=>overlay.remove(),reduced.matches?0:180);};
+ overlay.querySelector('button').hidden=true;
 })();
