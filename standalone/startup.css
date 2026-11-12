@@ -1,21 +1,12 @@
-.similora-startup{position:fixed;inset:0;z-index:2147483647;background:#273d41;color:#e9f5f5;display:flex;flex-direction:column;align-items:center;justify-content:center;font:16px/1.5 system-ui;padding:16px;transition:opacity .18s ease;isolation:isolate}
-.similora-startup video{display:block;width:100%;height:calc(100% - 110px);object-fit:contain;pointer-events:none}
-.similora-startup .startup-status{text-align:center;max-width:36rem;margin:12px 0;color:#e9f5f5}
-.similora-startup .startup-skip{border:1px solid #9ababb;background:#20383b;color:#e9f5f5;border-radius:20px;padding:8px 18px;min-height:44px;cursor:pointer;font:inherit}
-.similora-startup.leaving{opacity:0;pointer-events:none}
-#accountStartup{animation:startup-failsafe 0s 25s forwards}
-@keyframes startup-failsafe{to{visibility:hidden;pointer-events:none}}
-#workspaceBoot.boot-playing{display:flex;flex-direction:column;background:#273d41;color:#e9f5f5;padding:16px}
-#workspaceBoot .boot-art{display:none}
-#workspaceBoot.boot-playing .boot-art{display:block;width:100%;height:calc(100% - 160px);object-fit:contain;min-height:0;flex:1}
-#workspaceBoot.boot-playing section{max-width:660px;background:transparent;border:0;box-shadow:none;padding:12px;text-align:center;flex:0 0 auto;color:#e9f5f5}
-#workspaceBoot.boot-playing h1{font-size:19px;margin:0 0 6px}#workspaceBoot.boot-playing p{margin:4px 0}#workspaceBoot.boot-playing #bootSpinner{margin:10px auto 0}
-@media(prefers-reduced-motion:reduce){.similora-startup{transition:none}}
-
-/* The edge-matted footage dissolves into the identical full-screen background. */
-.similora-startup{padding:0;overflow:hidden}
-.similora-startup video,#workspaceBoot.boot-playing .boot-art{position:absolute;inset:0;margin:auto;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;aspect-ratio:2/3}
+.similora-startup,#workspaceBoot.boot-playing{position:fixed;inset:0;z-index:2147483647;overflow:hidden;background:linear-gradient(135deg,#0d232d,#1b3e43,#0d232d);color:#e7f5f2;display:grid;place-items:center;padding:20px;font:16px/1.5 system-ui;transition:opacity .2s ease}
+.logo-art{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;width:100%;height:100%;position:absolute;inset:0;text-align:center}
+.logo-art img{width:clamp(160px,38vw,290px);max-width:70vw;max-height:48vh;object-fit:contain;background:transparent;border:0;border-radius:0;box-shadow:none}
+.intro-name{font:clamp(34px,6vw,48px)/1.2 Georgia,serif;margin:0;letter-spacing:.015em;color:#e7f5f2}
+.intro-caption{font:15px/1.5 system-ui;margin:0;color:#aececc;letter-spacing:.04em}
+#workspaceBoot .logo-art{display:none}#workspaceBoot.boot-playing .logo-art{display:flex}
 .similora-startup .startup-status,.similora-startup .startup-skip,#workspaceBoot.boot-playing section{visibility:hidden}
-.similora-startup.intro-ended video,#workspaceBoot.boot-playing.intro-ended video{display:none}
+.similora-startup.intro-ended .logo-art,#workspaceBoot.boot-playing.intro-ended .logo-art{display:none}
 .similora-startup.intro-ended .startup-status,#workspaceBoot.boot-playing.intro-ended section{visibility:visible}
-#accountStartup{animation:none}
+#workspaceBoot.boot-playing section{max-width:660px;background:transparent;box-shadow:none;border:0;text-align:center;padding:20px;color:#e7f5f2}
+.similora-startup.leaving{opacity:0;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.similora-startup{transition:none}}

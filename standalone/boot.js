@@ -7,7 +7,7 @@
    await consent;
    document.getElementById('workspaceBoot').classList.add('boot-playing');
    let handedOff=false;try{handedOff=Date.now()-Number(sessionStorage.getItem('similora-intro-handoff'))<60000;sessionStorage.removeItem('similora-intro-handoff')}catch(_){}
-   animation=handedOff?{done:Promise.resolve(),stop(){}}:window.SimiloraStartup?.control(document.querySelector('#workspaceBoot video'));
+   animation=handedOff?{done:Promise.resolve(),stop(){}}:window.SimiloraStartup?.control(document.querySelector('#workspaceBoot .logo-art'));
    const title=document.getElementById('bootTitle'),message=document.getElementById('bootMessage');
    title.textContent='Preparing your workspace';message.textContent='Loading the repertory, remedies and clinical controls…';
    document.getElementById('bootContinue').hidden=true;document.getElementById('bootSpinner').hidden=false;

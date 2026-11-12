@@ -18,3 +18,20 @@ h1{font-size:clamp(25px,4vw,34px);margin:0 0 6px}h2{font-size:21px;margin:0}main
 @media(max-width:600px){.account-filters{grid-template-columns:1fr;gap:0}}
 
 .similora-brand{display:flex;align-items:center;gap:14px}.similora-brand img{border-radius:16px;flex:none}.similora-brand h1{margin:0}
+/* Calm, crisp glass access screen with the same emblem as the launcher. */
+body{background:radial-gradient(ellipse at 15% 0%,#d8efed 0%,transparent 55%),linear-gradient(145deg,#edf3f8,#e5edf4);min-height:100dvh;padding-top:clamp(20px,5vh,64px)}
+main{border-radius:32px;border:1px solid #ffffffd9;background:#ffffffb8;box-shadow:0 24px 70px #16374614,inset 0 1px 0 #fff;max-width:960px}
+@supports(backdrop-filter:blur(1px)){main{backdrop-filter:blur(18px)}}
+.similora-brand{gap:16px;align-items:center;margin-bottom:14px}.similora-brand img{width:68px;height:68px;object-fit:contain;background:transparent;border-radius:50%}
+input,select{border-radius:16px;border:1px solid #a8bfc9;background:#ffffffb3;padding:13px 15px;color:#193149;min-height:48px}
+input:focus,select:focus{outline:3px solid #309b9a30;border-color:#287d83}
+button,a{border-radius:16px;border:1px solid #afc4cf;background:#ffffff9c;box-shadow:inset 0 1px 0 #ffffff80;min-height:48px;font-weight:600}
+#signin,#confirmRemove{background:linear-gradient(135deg,#1a737c,#245c7a);border-color:#206b79;color:white;box-shadow:0 6px 16px #185b7620}
+#login{padding:6px 0 12px}#login label{font-size:14px;font-weight:600;letter-spacing:.01em}#login input{margin-top:7px;font-size:16px;font-weight:400}#login>button{min-width:130px}
+.privacy-summary{background:#e9f3f58c;border-radius:20px;border-color:#b9cfd67a}
+#accounts li,dialog{border-radius:24px}#accounts li{background:#ffffff65}
+@media(max-width:480px){main{border-radius:28px;padding:24px 18px}.similora-brand img{width:60px;height:60px}}
+@media(prefers-color-scheme:dark){body{background:radial-gradient(ellipse at 15% 0%,#204d51,transparent 60%),linear-gradient(145deg,#101e2a,#142d36)}main{background:#162c3bd4;border-color:#6b95983d;box-shadow:0 24px 70px #0003,inset 0 1px 0 #a5d1ca19}input,select,button,a{background:#1e3848b3;border-color:#50717d;color:#e7f5f2}.privacy-summary{background:#203f4c80;border-color:#4d748173}#accounts li{background:#1c35476e}}
+main:has(#login:not([hidden])){max-width:560px}
+#login .remember-option{display:flex;align-items:center;gap:12px;font-weight:400;letter-spacing:0;margin:20px 0}
+#remember{min-height:18px;height:18px!important;width:18px!important;flex:0 0 18px;margin:0!important;accent-color:#227781}
