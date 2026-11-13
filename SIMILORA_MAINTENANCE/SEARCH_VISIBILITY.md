@@ -23,3 +23,11 @@ Search engines choose whether and when to crawl, index and rank pages. No deploy
 Build clinical assets, then run `node tests/test_search.mjs` for public GET/HEAD, canonical/schema, sitemap, robots, ownership proof and DB independence. Existing `node tests/test_cloudflare_worker.mjs` covers authentication, approval/revocation, owner access, cookies and CSRF. Test the public page at mobile and desktop widths without JavaScript. Check production responses after deployment.
 
 References: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap and https://www.indexnow.org/documentation
+
+## Deployment receipt — 2026-11-13
+
+Source commit `13af6e3` deployed successfully via [Cloudflare workflow run 43357677620](https://github.com/devil01529/similora-website/actions/runs/43357677620). IndexNow accepted the canonical homepage with HTTP **202** at 03:15:35 UTC, meaning accepted pending ownership verification, not proof of indexing. Public key retrieval was validated before submission.
+
+Live checks passed for public HTML, canonical metadata, structured data, phone layout, sign-in navigation, GET/HEAD responses, sitemap and robots. Googlebot and Bingbot user-agent requests received HTTP 200. Unauthenticated clinical assets remain HTTP 401 and noindex. Local auth/approval/revocation/CSRF regression tests passed.
+
+Updating the GitHub repository About/homepage field was attempted but the connected integration returned HTTP 403 for repository-settings changes. The README already links to the canonical website, so search discovery does not depend on that optional setting.
