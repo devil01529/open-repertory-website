@@ -1,3 +1,4 @@
+import {SCHEMA_JSON} from './search.mjs';
 import {readFile,writeFile,mkdir,cp,rm,readdir} from 'node:fs/promises';
 import path from 'node:path';
 import {gzipSync} from 'node:zlib';
@@ -50,3 +51,6 @@ for(const file of ['similora-launcher.png','startup.js','startup.css','account.h
 console.log('Prepared protected clinical assets and shared account interface');
 
 await cp(root+'standalone/similora-mark-v1.png',web+'/img/brandmark.png');
+
+await cp(root+'standalone/home.css',out+'/home.css');
+await writeFile(out+'/home.html',(await readFile(root+'standalone/home.html','utf8')).replace('</head>','<script type="application/ld+json">'+SCHEMA_JSON+'</script></head>'));

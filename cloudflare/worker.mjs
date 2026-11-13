@@ -1,3 +1,4 @@
+import {publicFiles,crawlFile,SCHEMA_JSON} from './search.mjs';
 import { randomBytes, scrypt, timingSafeEqual, createHash, verify } from 'node:crypto';
 import { promisify } from 'node:util';
 import { MIGRATION_PUBLIC_KEY } from './migration-public-key.mjs';
@@ -8,6 +9,7 @@ const cookieName = '__Host-or_session';
 const cookie = (value, age) => `${cookieName}=${value}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${age}`;
 const headers = {
   'Cache-Control': 'no-store',
+  'X-Robots-Tag': 'noindex, nofollow, noarchive',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'no-referrer',
   'X-Frame-Options': 'DENY',
@@ -89,6 +91,7 @@ async function serveAsset(req, env, path, account) {
   for (const [key,value] of Object.entries(headers)) h.set(key,value);
   h.delete('ETag'); h.delete('Last-Modified');
   if (['/login','/account','/'].includes(new URL(req.url).pathname)) h.set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
+  if(new URL(req.url).pathname==='/'){h.set('X-Robots-Tag','index, follow, max-image-preview:large');h.set('Cache-Control','public, max-age=300');h.set('Content-Security-Policy',"default-src 'self'; script-src 'self' 'sha256-"+createHash('sha256').update(SCHEMA_JSON).digest('base64')+"'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");}
   if (account && ['/workspace/js/platform.js','/workspace/js/case-policy.js'].includes(path)) {
     h.delete('Content-Length'); h.delete('Content-Encoding');
     return new Response((await source.text()).replaceAll('SIMILORA_ACCOUNT_PLACEHOLDER', account), {headers:h});
@@ -99,6 +102,14 @@ export default {
   async fetch(req, env, ctx) {
     try {
       const url = new URL(req.url), now = Date.now();
+      if(req.method==='GET'||req.method==='HEAD'){
+        const crawl=crawlFile(url.pathname);
+        if(crawl)return new Response(req.method==='HEAD'?null:crawl.body,{headers:{...headers,'Content-Type':crawl.type,'Cache-Control':'public, max-age=300'}});
+        if(publicFiles.has(url.pathname)){
+          const response=await serveAsset(req,env,publicFiles.get(url.pathname));
+          return req.method==='HEAD'?new Response(null,{status:response.status,headers:response.headers}):response;
+        }
+      }
       if (req.method === 'POST' && url.pathname === '/__migration') return await migrate(req, env);
       if (req.method === 'GET' && url.pathname === '/healthz') {
         const ready = !!await env.DB.prepare("SELECT value FROM metadata WHERE key='migration-complete'").first();
@@ -183,7 +194,7 @@ export default {
         if (['js/patients.js','js/lifecycle.js','js/recovery.js','js/clinician-tools.js'].includes(relative)) return reply(404,{error:'Unavailable in the initials-only website'});
         return await serveAsset(req,env,'/workspace/'+relative,user.id);
       }
-      if (['/','/login','/account'].includes(url.pathname)) return await serveAsset(req,env,'/account.html');
+      if (['/login','/account'].includes(url.pathname)) return await serveAsset(req,env,'/account.html');
       if (['/similora-launcher.png','/startup.js','/startup.css','/account.js','/account-responsive.css','/similora-mark-v1.png','/google779fa91694e4480f.html'].includes(url.pathname)) return await serveAsset(req,env,url.pathname);
       return reply(404,{error:'Not found'});
     } catch (_) { return reply(400,{error:'Request could not be completed'}); }

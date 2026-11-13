@@ -7,6 +7,7 @@ Website code, tests, design assets and future hosting configuration belong exclu
 ## Current production
 
 - Website: **https://similora.similora-167bde6ed1.workers.dev**
+- Public search landing page at `/`; clinical workspace at `/workspace/`.
 - Account and owner approvals: `/account` on the same domain. No ChatGPT or Apper account is required.
 - Cloudflare Workers + D1 on free-tier quotas. The approved glass UI, protected clinical assets and initials-only browser-local case policy are retained.
 - Existing independent website accounts were migrated with the same IDs, password hashes and approval states. Similora APK 2.0.1 uses the same approval service.
@@ -37,4 +38,4 @@ The design test uses a DOM harness, not browser rendering. No login credentials 
 
 Only this repository receives future website work. Do not write website changes to the APK update repository. Do not put Android signing keys, patient records, passwords or audit dumps here. Backend changes needed for the website must preserve the existing Android login/approval contract and be tracked as an explicit integration change.
 
-No deployment automation is enabled. Committing website source does not publish a website.
+Production deployment is automated through the Cloudflare workflow described above. Public search changes notify IndexNow after deployment; see [search visibility](SIMILORA_MAINTENANCE/SEARCH_VISIBILITY.md).

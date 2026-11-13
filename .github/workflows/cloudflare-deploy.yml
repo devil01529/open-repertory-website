@@ -17,6 +17,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -31,6 +32,8 @@ jobs:
           node tests/test_account_relay.mjs
           python3 cloudflare/prepare_baseline.py
           node cloudflare/build_assets.mjs
+          node tests/test_search.mjs
+          python3 -m py_compile scripts/submit_search.py
       - name: Provision and deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -59,3 +62,13 @@ jobs:
                   print('Waiting for the new HTTPS endpoint to become ready...')
                   time.sleep(10)
           PY
+
+      - name: Notify search engines about public content changes
+        env:
+          SEARCH_EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$SEARCH_EVENT" = workflow_dispatch ]; then
+            python3 scripts/submit_search.py --force
+          else
+            python3 scripts/submit_search.py
+          fi
