@@ -89,6 +89,11 @@ async function serveAsset(req, env, path, account) {
   if (source.status !== 200) return reply(404, {error:'Not found'});
   const h = new Headers(source.headers);
   for (const [key,value] of Object.entries(headers)) h.set(key,value);
+  if (publicFiles.has(new URL(req.url).pathname)) {
+    h.delete('X-Robots-Tag');
+    h.set('Cache-Control','public, max-age=300');
+    if (path==='/updates.atom') h.set('Content-Type','application/atom+xml; charset=utf-8');
+  }
   h.delete('ETag'); h.delete('Last-Modified');
   if (['/login','/account','/'].includes(new URL(req.url).pathname)) h.set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
   if(new URL(req.url).pathname==='/'){h.set('X-Robots-Tag','index, follow, max-image-preview:large');h.set('Cache-Control','public, max-age=300');h.set('Content-Security-Policy',"default-src 'self'; script-src 'self' 'sha256-"+createHash('sha256').update(SCHEMA_JSON).digest('base64')+"'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");}
@@ -104,7 +109,13 @@ export default {
       const url = new URL(req.url), now = Date.now();
       if(req.method==='GET'||req.method==='HEAD'){
         const crawl=crawlFile(url.pathname);
-        if(crawl)return new Response(req.method==='HEAD'?null:crawl.body,{headers:{...headers,'Content-Type':crawl.type,'Cache-Control':'public, max-age=300'}});
+        if(crawl){
+          const publicHeaders=new Headers(headers);
+          publicHeaders.delete('X-Robots-Tag');
+          publicHeaders.set('Content-Type',crawl.type);
+          publicHeaders.set('Cache-Control','public, max-age=300');
+          return new Response(req.method==='HEAD'?null:crawl.body,{headers:publicHeaders});
+        }
         if(publicFiles.has(url.pathname)){
           const response=await serveAsset(req,env,publicFiles.get(url.pathname));
           return req.method==='HEAD'?new Response(null,{status:response.status,headers:response.headers}):response;

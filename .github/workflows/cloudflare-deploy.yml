@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-          fetch-depth: 2
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -34,6 +34,7 @@ jobs:
           node cloudflare/build_assets.mjs
           node tests/test_search.mjs
           python3 -m py_compile scripts/submit_search.py
+          python3 tests/test_search_submission.py
       - name: Provision and deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

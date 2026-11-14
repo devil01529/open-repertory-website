@@ -1,4 +1,5 @@
-import {SCHEMA_JSON} from './search.mjs';
+import {SCHEMA_JSON,updateFeed} from './search.mjs';
+import {execFileSync} from 'node:child_process';
 import {readFile,writeFile,mkdir,cp,rm,readdir} from 'node:fs/promises';
 import path from 'node:path';
 import {gzipSync} from 'node:zlib';
@@ -6,9 +7,12 @@ import {adaptAsset} from '../standalone/clinical-assets.mjs';
 import {brandAsset,brandedAssets} from '../standalone/branding.mjs';
 
 const root = new URL('../',import.meta.url).pathname;
+// Stable across unrelated deploys; never fabricate freshness using build time.
+const publicUpdated = execFileSync('git',['log','-1','--format=%cI','--','standalone/home.html','standalone/home.css','standalone/similora-launcher.png','standalone/similora-mark-v1.png','cloudflare/search.mjs'],{cwd:root,encoding:'utf8'}).trim();
 const out = path.join(root,'cloudflare/.build/assets');
 await rm(out,{recursive:true,force:true});
 await mkdir(out,{recursive:true});
+await writeFile(out+'/updates.atom',updateFeed(publicUpdated));
 await cp(path.join(root,'cloudflare/.build/baseline'),out+'/workspace',{recursive:true});
 async function compress(dir) {
   for(const item of await readdir(dir,{withFileTypes:true})) {
