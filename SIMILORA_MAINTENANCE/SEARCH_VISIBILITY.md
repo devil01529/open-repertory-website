@@ -41,3 +41,9 @@ Removed inherited noindex/nofollow headers from public supporting assets and dis
 The deployment notification script now validates all discovery resources and separately notifies both IndexNow and Google’s public WebSub hub. Results are recorded independently, and either failure remains visible. Hub acceptance is not a Search Console submission or a promise that Google Search subscribes to or indexes the feed. Do not repeatedly submit unchanged pages.
 
 Google’s documentation notes that new sites commonly take days to weeks and inclusion is not guaranteed: https://developers.google.com/search/docs/crawling-indexing/ask-google-to-recrawl . Its supported sitemap guidance describes WebSub for Atom/RSS updates: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap . Hub protocol: https://pubsubhubbub.appspot.com/ .
+
+### Follow-up deployment receipt
+
+Commit `1aa35d5` deployed successfully in [run 43575267862](https://github.com/devil01529/similora-website/actions/runs/43575267862). At 2026-11-14 08:19:52 UTC, IndexNow returned **200**, and Google WebSub hub returned **204**. Live GET and HEAD checks passed for homepage, CSS, sitemap, robots, feed and proof file; private clinical GET remained 401/noindex. Login remains noindex.
+
+Hub debug showed the notification time but `Last successful fetch: n/a` immediately after deployment. Thus only notification acceptance is established, not a feed fetch or Google Search indexing. Search query `site:similora.similora-167bde6ed1.workers.dev/` returned no results at inspection time. Owner-authenticated Search Console URL Inspection is the remaining way to obtain Google's internal status and request indexing directly.
